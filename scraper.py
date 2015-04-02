@@ -29,10 +29,10 @@ CREATOR_ = re.compile(r'\"creator\":\"([^\"]+)\"')
 INVALID_CHARACTERS_ = re.compile(r'[\\/\?:\*<>|"]')
 
 LAST_PAGE = 1
-MIN_FAVOURITED = 3
+MIN_FAVOURITED = 5
 MIN_DIFFICULTY = 4.0
 MIN_RANKED = 1
-MIN_NON_RANKED = 3
+MIN_NON_RANKED = 5
 MIN_PP_RANK = 10000
 
 DOWNLOAD_FOLDER = r'C:\Users\user\Desktop\beatmaps'
@@ -219,7 +219,7 @@ def download_beatmap(session, beatmap):
 def beatmap_name(beatmap):
     artist = ARTIST_.search(beatmap.json).group(1)
     title = TITLE_.search(beatmap.json).group(1)
-    return INVALID_CHARACTERS_.sub('', str(beatmap.id) + ' ' + artist + ' - ' + title)
+    return INVALID_CHARACTERS_.sub('', str(beatmap.id_) + ' ' + artist + ' - ' + title)
 
 
 def favourited_times(beatmap):
