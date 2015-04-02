@@ -3,6 +3,12 @@ import pickle
 import re
 import os
 
+# TODO
+# MOST IMPORTANTLY: ADD TESTS
+# ADD ADDITIONAL FUNCTIONALITY
+# ADD GUI
+# LEARN HOW TO SCRAPE TOTAL KUDOSU EARNED(FAKE JAVASCRIPT)
+
 LOGIN_DATA = {
     'username': 'krur',
     'password': 'zlototopotega',
@@ -14,9 +20,20 @@ STAR_DIFFICULTY_ = re.compile(r'\"difficultyrating\":\"([0-9\.]+)\"')
 GAME_MODE_ = re.compile(r'\"mode\":\"([0123])\"')
 ARTIST_ = re.compile(r'\"artist\":\"([^\"]+)\"')
 TITLE_ = re.compile(r'\"title\":\"([^\"]+)\"')
+USER_ID_ = re.compile(r'\"user_id\":\"([0-9]+)\"')
+RANKED_ = re.compile(r'Ranked & Approved Beatmaps \(([0-9]+)\)')
+PENDING_ = re.compile(r'Pending Beatmaps \([0-9]+\)')
+GRAVEYARDED_ = re.compile(r'Graveyarded Beatmaps \([0-9]+\)')
+PP_RANK_ = re.compile(r'\"pp_rank\":\"([0-9]+)\"')
+CREATOR_ = re.compile(r'\"creator\":\"([^\"]+)\"')
 INVALID_CHARACTERS_ = re.compile(r'[\\/\?:\*<>|"]')
 
 LAST_PAGE = 1
+MIN_FAVOURITED = 3
+MIN_DIFFICULTY = 4.0
+MIN_RANKED = 1
+MIN_NON_RANKED = 3
+MIN_PP_RANK = 10000
 
 DOWNLOAD_FOLDER = r'C:\Users\user\Desktop\beatmaps'
 
@@ -26,6 +43,9 @@ class Beatmap:
         self.id_ = id_
         self.source = None
         self.json = None
+        self.creator = None
+        self.profile = None
+        self.user_page = None
 
 
 def main():
@@ -48,33 +68,117 @@ def download_good_maps(session, beatmaps):
 
     try:
         os.makedirs(DOWNLOAD_FOLDER)
-    except IOError:
+    except WindowsError:
         pass
 
     for beatmap in beatmaps:
         if beatmap.id_ not in database:
-            if favourited_times(beatmap) > 2 and star_difficulty(beatmap) > 4:
+            if ok_difficulty(beatmap) and (ok_creator(beatmap) or ok_favourited(beatmap)):
                 database.add(beatmap.id_)
                 download_beatmap(session, beatmap)
 
     pickle.dump(database, open("database.dat", "wb"))
 
 
+def ok_favourited(beatmap):
+    return favourited_times(beatmap) >= MIN_FAVOURITED
+
+
+def ok_difficulty(beatmap):
+    return star_difficulty(beatmap) >= MIN_DIFFICULTY
+
+
+def ok_creator(beatmap):
+    return ok_pp_rank(beatmap) or ok_kudosu(beatmap) or ok_maps(beatmap)
+
+
+def ok_pp_rank(beatmap):
+    pp_rank = PP_RANK_.search(beatmap.creator).group(1)
+    return int(pp_rank) < MIN_PP_RANK
+
+
+def ok_maps(beatmap):
+    return ok_ranked(beatmap) or ok_non_ranked(beatmap)
+
+# TODO
+# FIRST FINISH SCRAPE_BEATMAPS_USER_PAGE
+def ok_kudosu(beatmap):
+    return False
+
+
+def ok_ranked(beatmap):
+    try:
+        ranked = RANKED_.search(beatmap.profile).group(1)
+    except (AttributeError, IndexError):
+        ranked = 0
+
+    return int(ranked) >= MIN_RANKED
+
+
+def ok_non_ranked(beatmap):
+    try:
+        pending = PENDING_.search(beatmap.profile).group(1)
+    except (AttributeError, IndexError):
+        pending = 0
+    try:
+        graveyarded = GRAVEYARDED_.search(beatmap.profile).group(1)
+    except (AttributeError, IndexError):
+        graveyarded = 0
+
+    return int(pending) + int(graveyarded) >= MIN_NON_RANKED
+
+
 def log_data(beatmaps):
     json_file = open('json.txt', 'w')
     source_file = open('source.txt', 'w')
+    creator_file = open('creator.txt', 'w')
+    profile_file = open('profile.txt', 'w')
+    user_page_file = open('user_page.txt', 'w')
     for beatmap in beatmaps:
         json_file.write(beatmap.json + '\n')
         source_file.write(beatmap.source + '\n')
+        creator_file.write(beatmap.creator + '\n')
+        profile_file.write(beatmap.profile + '\n')
+        user_page_file.write(beatmap.user_page + '\n')
 
     json_file.close()
     source_file.close()
+    creator_file.close()
+    profile_file.close()
+    user_page_file.close()
 
 
 def scrape_data(session, beatmaps):
     scrape_beatmaps_id(session, beatmaps)
     scrape_beatmaps_source(session, beatmaps)
     scrape_beatmaps_json(session, beatmaps)
+    scrape_beatmaps_creator(session, beatmaps)
+    scrape_beatmaps_profile(session, beatmaps)
+    scrape_beatmaps_user_page(session, beatmaps)
+
+
+# TODO
+# ADD METHOD TO SCRAPE KUDOSU FOR USER PAGE
+# NEED TO FAKE JAVASCRIPT
+def scrape_beatmaps_user_page(session, beatmaps):
+    for beatmap in beatmaps:
+        beatmap.user_page = '\n'
+
+
+def scrape_beatmaps_creator(session, beatmaps):
+    for beatmap in beatmaps:
+        creator = CREATOR_.search(beatmap.json).group(1)
+        response = session.get('https://osu.ppy.sh/api/get_user?k=c5878839513d6eb99dbf09f8244653332b93eb3c&u='
+                               + creator)
+        beatmap.creator = response.content
+
+
+def scrape_beatmaps_profile(session, beatmaps):
+    for beatmap in beatmaps:
+        user_id = USER_ID_.search(beatmap.creator).group(1)
+        response = session.get('https://osu.ppy.sh/pages/include/profile-beatmaps.php?u='
+                               + user_id + '&m=0')
+        beatmap.profile = response.content
 
 
 def scrape_beatmaps_id(session, beatmaps):
@@ -115,7 +219,7 @@ def download_beatmap(session, beatmap):
 def beatmap_name(beatmap):
     artist = ARTIST_.search(beatmap.json).group(1)
     title = TITLE_.search(beatmap.json).group(1)
-    return INVALID_CHARACTERS_.sub('', artist + ' - ' + title)
+    return INVALID_CHARACTERS_.sub('', str(beatmap.id) + ' ' + artist + ' - ' + title)
 
 
 def favourited_times(beatmap):
