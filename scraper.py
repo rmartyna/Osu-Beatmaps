@@ -43,6 +43,7 @@ MIN_NON_RANKED = 5
 MIN_PP_RANK = 10000
 
 DOWNLOAD_FOLDER = r'C:\Users\user\Desktop\beatmaps'
+ERROR_LOG = open('error_log.txt', 'w')
 
 
 class Beatmap:
@@ -62,31 +63,31 @@ def main():
         beatmaps = []
         try:
             login(session)
-        except RequestException:
-            error_msg('Main: Could not login to Osu!')
+        except RequestException as err:
+            error_msg('Main: Could not login into Osu!', err)
             return
         try:
             scrape_data(session, beatmaps)
-        except RequestException:
-            error_msg('Main: Could not scrape data properly.')
+        except RequestException as err:
+            error_msg('Main: Could not scrape data properly.', err)
             return
         try:
             log_data(beatmaps)
-        except Exception:
-            error_msg('Main: Could not log data.')
+        except Exception as err:
+            error_msg('Main: Could not log data.', err)
         try:
             download_good_maps(session, beatmaps)
-        except Exception:
-            error_msg('Main: Error while downloading maps.')
+        except Exception as err:
+            error_msg('Main: Error while downloading maps.', err)
             return
-    except RequestException:
-        error_msg('Main: Could not open session.')
+    except RequestException as err:
+        error_msg('Main: Could not open session.', err)
         return
     finally:
         try:
             session.close()
-        except RequestException:
-            error_msg('Main: Could not close session.')
+        except RequestException as err:
+            error_msg('Main: Could not close session.', err)
             return
 
 
@@ -205,10 +206,18 @@ def scrape_beatmaps_creator(session, beatmaps):
 
 def scrape_beatmaps_profile(session, beatmaps):
     for beatmap in beatmaps:
-        user_id = USER_ID_.search(beatmap.creator).group(1)
-        response = session.get('https://osu.ppy.sh/pages/include/profile-beatmaps.php?u='
-                               + user_id + '&m=0')
-        beatmap.profile = response.content
+        try:
+            user_id = USER_ID_.search(beatmap.creator).group(1)
+            try:
+                response = session.get('https://osu.ppy.sh/pages/include/profile-beatmaps.php?u='
+                                       + user_id + '&m=0')
+                beatmap.profile = response.content
+            except RequestException as err:
+                error_msg('scrape_beatmaps_profile: Could not get profile page of creator '
+                          + str(user_id) + '.', err)
+        except Exception as err:
+            error_msg('scrape_beatmaps_profile: Error finding user_id of creator of beatmap '
+                      + beatmap.id_ + '.', err)
 
 
 def scrape_beatmaps_id(session, beatmaps):
@@ -220,10 +229,10 @@ def scrape_beatmaps_id(session, beatmaps):
                 result = BEATMAP_ID_.findall(response.content)
                 for beatmap_id in result:
                     beatmaps.append(Beatmap(beatmap_id))
-            except AttributeError:
-                error_msg('scrape_beatmaps_id: Error finding ids on page.')
-        except RequestException:
-            error_msg('scrape_beatmaps_id: Error getting page ' + str(page) + '.')
+            except Exception as err:
+                error_msg('scrape_beatmaps_id: Error finding ids on page.', err)
+        except RequestException as err:
+            error_msg('scrape_beatmaps_id: Error getting page ' + str(page) + '.', err)
 
 
 def scrape_beatmaps_source(session, beatmaps):
@@ -232,9 +241,9 @@ def scrape_beatmaps_source(session, beatmaps):
             response = session.get('https://osu.ppy.sh/s/'
                                    + beatmap.id_)
             beatmap.source = response.content
-        except RequestException:
+        except RequestException as err:
             error_msg('scrape_beatmaps_source: Error getting source page on beatmap '
-                      + str(beatmap.id_) + '.')
+                      + str(beatmap.id_) + '.', err)
 
 
 def scrape_beatmaps_json(session, beatmaps):
@@ -243,9 +252,9 @@ def scrape_beatmaps_json(session, beatmaps):
             response = session.get('https://osu.ppy.sh/api/get_beatmaps?k=c5878839513d6eb99dbf09f8244653332b93eb3c&s='
                                    + beatmap.id_)
             beatmap.json = response.content
-        except RequestException:
+        except RequestException as err:
             error_msg('scrape_beatmaps_json: Error getting json on beatmap '
-                      + str(beatmap.id_) + '.')
+                      + str(beatmap.id_) + '.', err)
 
 
 def login(session):
@@ -255,8 +264,8 @@ def login(session):
 def download_beatmap(session, beatmap):
     try:
         absolute_path = os.path.join(os.path.join(DOWNLOAD_FOLDER, beatmap_name(beatmap) + '.osz'))
-    except Exception:
-        error_msg('download_beatmap: Could not make absolute path.')
+    except Exception as err:
+        error_msg('download_beatmap: Could not make absolute path.', err)
         return
     beatmap_file = None
     try:
@@ -265,18 +274,18 @@ def download_beatmap(session, beatmap):
             beatmap_data = session.get('https://osu.ppy.sh/d/' + beatmap.id_)
             try:
                 beatmap_file.write(beatmap_data.content)
-            except Exception:
-                error_msg('download_beatmap: Could not write beatmap ' + beatmap.id_ + ' into file.')
-        except RequestException:
+            except Exception as err:
+                error_msg('download_beatmap: Could not write beatmap ' + beatmap.id_ + ' into file.', err)
+        except RequestException as err:
             error_msg('download_beatmap: Could not download beatmap '
-                      + beatmap.id_ + ".")
-    except Exception:
-        error_msg('download_beatmap: Could not open file.')
+                      + beatmap.id_ + ".", err)
+    except Exception as err:
+        error_msg('download_beatmap: Could not open file.', err)
     finally:
         try:
             beatmap_file.close()
-        except Exception:
-            error_msg('download_beatmap: Could not close file.')
+        except Exception as err:
+            error_msg('download_beatmap: Could not close file.', err)
 
 
 def beatmap_name(beatmap):
@@ -302,9 +311,17 @@ def star_difficulty(beatmap):
     return max_difficulty
 
 
-def error_msg(msg):
+def error_msg(msg, err):
     print(msg, file=sys.stderr)
+    try:
+        ERROR_LOG.write(msg + '\n' + str(err) + '\n\n')
+    except Exception as e:
+        print('CANNOT WRITE INTO ERROR LOG.', file=sys.stderr)
+        print(str(e))
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        ERROR_LOG.close()
