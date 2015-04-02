@@ -54,6 +54,10 @@ class Beatmap:
         self.user_page = None
 
 
+class UnknownException(Exception):
+    pass
+
+
 def main():
     session = None
     try:
@@ -238,9 +242,13 @@ def scrape_beatmaps_source(session, beatmaps):
 
 def scrape_beatmaps_json(session, beatmaps):
     for beatmap in beatmaps:
-        response = session.get('https://osu.ppy.sh/api/get_beatmaps?k=c5878839513d6eb99dbf09f8244653332b93eb3c&s='
-                               + beatmap.id_)
-        beatmap.json = response.content
+        try:
+            response = session.get('https://osu.ppy.sh/api/get_beatmaps?k=c5878839513d6eb99dbf09f8244653332b93eb3c&s='
+                                   + beatmap.id_)
+            beatmap.json = response.content
+        except RequestException:
+            error_msg('scrape_beatmaps_json: Error getting json on beatmap '
+                      + str(beatmap.id_) + '.')
 
 
 def login(session):
@@ -248,10 +256,16 @@ def login(session):
 
 
 def download_beatmap(session, beatmap):
-    beatmap_file = open(os.path.join(DOWNLOAD_FOLDER, beatmap_name(beatmap) + '.osz'), 'wb')
-    beatmap_data = session.get('https://osu.ppy.sh/d/' + beatmap.id_)
-    beatmap_file.write(beatmap_data.content)
-    beatmap_file.close()
+    beatmap_file = None
+    try:
+        beatmap_file = open(os.path.join(DOWNLOAD_FOLDER, beatmap_name(beatmap) + '.osz'), 'wb')
+        beatmap_data = session.get('https://osu.ppy.sh/d/' + beatmap.id_)
+        beatmap_file.write(beatmap_data.content)
+        beatmap_file.close()
+    finally:
+        try:
+            beatmap_file.close()
+        except Exception
 
 
 def beatmap_name(beatmap):
