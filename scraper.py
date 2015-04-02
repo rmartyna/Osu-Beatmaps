@@ -13,6 +13,7 @@ import sys
 # ADD GUI
 # LEARN HOW TO SCRAPE TOTAL KUDOSU EARNED(FAKE JAVASCRIPT)
 
+
 LOGIN_DATA = {
     'username': 'krur',
     'password': 'zlototopotega',
@@ -52,10 +53,6 @@ class Beatmap:
         self.creator = None
         self.profile = None
         self.user_page = None
-
-
-class UnknownException(Exception):
-    pass
 
 
 def main():
@@ -256,16 +253,30 @@ def login(session):
 
 
 def download_beatmap(session, beatmap):
+    try:
+        absolute_path = os.path.join(os.path.join(DOWNLOAD_FOLDER, beatmap_name(beatmap) + '.osz'))
+    except Exception:
+        error_msg('download_beatmap: Could not make absolute path.')
+        return
     beatmap_file = None
     try:
-        beatmap_file = open(os.path.join(DOWNLOAD_FOLDER, beatmap_name(beatmap) + '.osz'), 'wb')
-        beatmap_data = session.get('https://osu.ppy.sh/d/' + beatmap.id_)
-        beatmap_file.write(beatmap_data.content)
-        beatmap_file.close()
+        beatmap_file = open(absolute_path, 'wb')
+        try:
+            beatmap_data = session.get('https://osu.ppy.sh/d/' + beatmap.id_)
+            try:
+                beatmap_file.write(beatmap_data.content)
+            except Exception:
+                error_msg('download_beatmap: Could not write beatmap ' + beatmap.id_ + ' into file.')
+        except RequestException:
+            error_msg('download_beatmap: Could not download beatmap '
+                      + beatmap.id_ + ".")
+    except Exception:
+        error_msg('download_beatmap: Could not open file.')
     finally:
         try:
             beatmap_file.close()
-        except Exception
+        except Exception:
+            error_msg('download_beatmap: Could not close file.')
 
 
 def beatmap_name(beatmap):
