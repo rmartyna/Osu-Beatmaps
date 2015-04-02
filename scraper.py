@@ -1,7 +1,11 @@
+from __future__ import print_function
 import requests
+from requests.exceptions import RequestException
 import pickle
 import re
 import os
+import sys
+
 
 # TODO
 # MOST IMPORTANTLY: ADD TESTS
@@ -28,7 +32,9 @@ PP_RANK_ = re.compile(r'\"pp_rank\":\"([0-9]+)\"')
 CREATOR_ = re.compile(r'\"creator\":\"([^\"]+)\"')
 INVALID_CHARACTERS_ = re.compile(r'[\\/\?:\*<>|"]')
 
+FIRST_PAGE = 1
 LAST_PAGE = 1
+
 MIN_FAVOURITED = 5
 MIN_DIFFICULTY = 4.0
 MIN_RANKED = 1
@@ -49,15 +55,38 @@ class Beatmap:
 
 
 def main():
-    session = requests.Session()
-    beatmaps = []
-    login(session)
-    scrape_data(session, beatmaps)
-    log_data(beatmaps)
-    # for beatmap in beatmaps:
-    #    print(str(beatmap.id_) + "    " + str(favourited_times(beatmap)) + "    " + str(star_difficulty(beatmap)))
-    download_good_maps(session, beatmaps)
-    session.close()
+    session = None
+    try:
+        session = requests.Session()
+        beatmaps = []
+        try:
+            login(session)
+        except RequestException:
+            error_msg('Main: Could not login to Osu!')
+            return
+        try:
+            scrape_data(session, beatmaps)
+        except RequestException:
+            error_msg('Main: Could not scrape data properly.')
+            return
+        try:
+            log_data(beatmaps)
+        except Exception:
+            error_msg('Main: Could not log data.')
+        try:
+            download_good_maps(session, beatmaps)
+        except Exception:
+            error_msg('Main: Error while downloading maps.')
+            return
+    except RequestException:
+        error_msg('Main: Could not open session.')
+        return
+    finally:
+        try:
+            session.close()
+        except RequestException:
+            error_msg('Main: Could not close session.')
+            return
 
 
 def download_good_maps(session, beatmaps):
@@ -182,20 +211,29 @@ def scrape_beatmaps_profile(session, beatmaps):
 
 
 def scrape_beatmaps_id(session, beatmaps):
-
-    for page in range(1, LAST_PAGE + 1):
-        response = session.get('https://osu.ppy.sh/p/beatmaplist?l=1&r=4&q=&g=0&la=0&s=4&o=1&m=-1&page='
-                               + str(page))
-        result = BEATMAP_ID_.findall(response.content)
-        for beatmap_id in result:
-            beatmaps.append(Beatmap(beatmap_id))
+    for page in range(FIRST_PAGE, LAST_PAGE + 1):
+        try:
+            response = session.get('https://osu.ppy.sh/p/beatmaplist?l=1&r=4&q=&g=0&la=0&s=4&o=1&m=-1&page='
+                                   + str(page))
+            try:
+                result = BEATMAP_ID_.findall(response.content)
+                for beatmap_id in result:
+                    beatmaps.append(Beatmap(beatmap_id))
+            except AttributeError:
+                error_msg('scrape_beatmaps_id: Error finding ids on page.')
+        except RequestException:
+            error_msg('scrape_beatmaps_id: Error getting page ' + str(page) + '.')
 
 
 def scrape_beatmaps_source(session, beatmaps):
     for beatmap in beatmaps:
-        response = session.get('https://osu.ppy.sh/s/'
-                               + beatmap.id_)
-        beatmap.source = response.content
+        try:
+            response = session.get('https://osu.ppy.sh/s/'
+                                   + beatmap.id_)
+            beatmap.source = response.content
+        except RequestException:
+            error_msg('scrape_beatmaps_source: Error getting source page on beatmap '
+                      + str(beatmap.id_) + '.')
 
 
 def scrape_beatmaps_json(session, beatmaps):
@@ -237,6 +275,10 @@ def star_difficulty(beatmap):
         if mode == 0 and max_difficulty < difficulty:
             max_difficulty = difficulty
     return max_difficulty
+
+
+def error_msg(msg):
+    print(msg, file=sys.stderr)
 
 
 if __name__ == "__main__":
