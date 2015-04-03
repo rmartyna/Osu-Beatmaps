@@ -79,7 +79,7 @@ def main():
                 error_msg('Main: Error while downloading maps.', err)
                 return
         except Exception as err:
-            error_msg('Main: Unkown error while scraping data.', err)
+            error_msg('Main: Unknown error while scraping data.', err)
             return
         finally:
             try:
@@ -126,7 +126,8 @@ def scrape_beatmaps_id(session, beatmaps):
 
 
 def scrape_beatmaps_source(session, beatmaps):
-    for beatmap in beatmaps:
+    to_remove = []
+    for index, beatmap in enumerate(beatmaps):
         try:
             response = session.get('https://osu.ppy.sh/s/'
                                    + beatmap.id_)
@@ -134,25 +135,50 @@ def scrape_beatmaps_source(session, beatmaps):
         except RequestException as err:
             error_msg('scrape_beatmaps_source: Error getting source page on beatmap '
                       + str(beatmap.id_) + '.', err)
+            to_remove.append(index)
+    remove_beatmaps(beatmaps, to_remove)
 
 
-# TODO
-# ADD METHOD TO SCRAPE KUDOSU FOR USER PAGE
-# NEED TO FAKE JAVASCRIPT
-def scrape_beatmaps_user_page(session, beatmaps):
-    pass
+
+def scrape_beatmaps_json(session, beatmaps):
+    to_remove = []
+    for index, beatmap in enumerate(beatmaps):
+        try:
+            response = session.get('https://osu.ppy.sh/api/get_beatmaps?k=c5878839513d6eb99dbf09f8244653332b93eb3c&s='
+                                   + beatmap.id_)
+            beatmap.json = response.content
+        except RequestException as err:
+            error_msg('scrape_beatmaps_json: Error getting json on beatmap '
+                      + str(beatmap.id_) + '.', err)
+            to_remove.append(index)
+    remove_beatmaps(beatmaps, to_remove)
+
 
 
 def scrape_beatmaps_creator(session, beatmaps):
-    for beatmap in beatmaps:
-        creator = CREATOR_.search(beatmap.json).group(1)
-        response = session.get('https://osu.ppy.sh/api/get_user?k=c5878839513d6eb99dbf09f8244653332b93eb3c&u='
-                               + creator)
-        beatmap.creator = response.content
+    to_remove = []
+    for index, beatmap in enumerate(beatmaps):
+        try:
+            creator = CREATOR_.search(beatmap.json).group(1)
+            try:
+                response = session.get('https://osu.ppy.sh/api/get_user?k=c5878839513d6eb99dbf09f8244653332b93eb3c&u='
+                                       + creator)
+                beatmap.creator = response.content
+            except RequestException as err:
+                error_msg('scrape_beatmaps_creator: Could not get creator page of baetmap '
+                          + beatmap.id_ + '.', err)
+                to_remove.append(index)
+        except Exception as err:
+            error_msg('scrape_beatmaps_creator: Error finding creator of beatmap '
+                      + beatmap.id_ + '.', err)
+            to_remove.append(index)
+    remove_beatmaps(beatmaps, to_remove)
+
 
 
 def scrape_beatmaps_profile(session, beatmaps):
-    for beatmap in beatmaps:
+    to_remove = []
+    for index, beatmap in enumerate(beatmaps):
         try:
             user_id = USER_ID_.search(beatmap.creator).group(1)
             try:
@@ -162,24 +188,27 @@ def scrape_beatmaps_profile(session, beatmaps):
             except RequestException as err:
                 error_msg('scrape_beatmaps_profile: Could not get profile page of creator '
                           + str(user_id) + '.', err)
+                to_remove.append(index)
         except Exception as err:
-            error_msg('scrape_beatmaps_profile: Error finding user_id of creator of beatmap '
+            error_msg('scrape_beatmaps_profile: Error finding user_id of beatmap '
                       + beatmap.id_ + '.', err)
+            to_remove.append(index)
+    remove_beatmaps(beatmaps, to_remove)
 
 
+# TODO
+# ADD METHOD TO SCRAPE KUDOSU FOR USER PAGE
+# NEED TO FAKE JAVASCRIPT
+def scrape_beatmaps_user_page(session, beatmaps):
+    pass
 
 
-
-
-def scrape_beatmaps_json(session, beatmaps):
-    for beatmap in beatmaps:
+def remove_beatmaps(beatmaps, to_remove):
+    for index in reversed(to_remove):
         try:
-            response = session.get('https://osu.ppy.sh/api/get_beatmaps?k=c5878839513d6eb99dbf09f8244653332b93eb3c&s='
-                                   + beatmap.id_)
-            beatmap.json = response.content
-        except RequestException as err:
-            error_msg('scrape_beatmaps_json: Error getting json on beatmap '
-                      + str(beatmap.id_) + '.', err)
+            beatmaps.pop(index)
+        except Exception as err:
+            error_msg('remove_beatmaps: Error while popping from beatmaps list.', err)
 
 
 def download_good_maps(session, beatmaps):
@@ -188,39 +217,48 @@ def download_good_maps(session, beatmaps):
     except IOError:
         database = set()
 
-    try:
-        os.makedirs(DOWNLOAD_FOLDER)
-    except WindowsError:
-        pass
+    if not (os.path.exists(DOWNLOAD_FOLDER) and os.path.isdir(DOWNLOAD_FOLDER)):
+        try:
+            os.makedirs(DOWNLOAD_FOLDER)
+        except WindowsError as err:
+            error_msg('download_good_maps: Could not make download directory.', err)
+            return
     try:
         for beatmap in beatmaps:
-            try:
-                int(beatmap.id_)
-            except (TypeError, ValueError):
-                continue
             if beatmap.id_ not in database:
-                try:
-                    if ok_difficulty(beatmap) and (ok_creator(beatmap) or ok_favourited(beatmap)):
+                if ok_difficulty(beatmap) and (ok_creator(beatmap) or ok_favourited(beatmap)):
+                    try:
+                        database.add(beatmap.id_)
                         try:
-                            database.add(beatmap.id_)
-                            try:
-                                download_beatmap(session, beatmap)
-                            except Exception as err:
-                                error_msg('download_good_maps: Could nto download beatmap.', err)
-                                continue
+                            download_beatmap(session, beatmap)
                         except Exception as err:
-                            error_msg('download_good_maps: Could not add id ' + beatmap.id_ + ' to database.', err)
+                            error_msg('download_good_maps: Could not download beatmap ' + beatmap.id_ + '.', err)
                             continue
-                except Exception as err:
-                    error_msg('download_good_maps: Unknown exception, probably ok_difficulty, etc. failed.', err)
-                    continue
-    except Exception as err:
-        error_msg('download_good_maps: Unknown error, Ignoring.', err)
+                    except Exception as err:
+                        error_msg('download_good_maps: Could not add id ' + beatmap.id_ + ' to database.', err)
+                        continue
     finally:
         try:
             pickle.dump(database, open("database.dat", "wb"))
         except Exception as err:
             error_msg('download_good_maps: Could not dump database.', err)
+
+
+def ok_difficulty(beatmap):
+    return star_difficulty(beatmap) >= MIN_DIFFICULTY
+
+
+def star_difficulty(beatmap):
+
+    difficulties = STAR_DIFFICULTY_.findall(beatmap.json)
+    game_modes = GAME_MODE_.findall(beatmap.json)
+    difficulties = [float(dif) for dif in difficulties]
+    game_modes = [int(mode) for mode in game_modes]
+    max_difficulty = 0
+    for difficulty, mode in zip(difficulties, game_modes):
+        if mode == 0 and max_difficulty < difficulty:
+            max_difficulty = difficulty
+    return max_difficulty
 
 
 def ok_favourited(beatmap):
@@ -231,12 +269,7 @@ def ok_favourited(beatmap):
         return False
 
 
-def ok_difficulty(beatmap):
-    try:
-        return star_difficulty(beatmap) >= MIN_DIFFICULTY
-    except Exception as err:
-        error_msg('ok_difficulty: star_difficulty returned unknown error.', err)
-        return False
+
 
 
 def ok_creator(beatmap):
@@ -417,16 +450,7 @@ def favourited_times(beatmap):
     return int(number)
 
 
-def star_difficulty(beatmap):
-    difficulties = STAR_DIFFICULTY_.findall(beatmap.json)
-    game_modes = GAME_MODE_.findall(beatmap.json)
-    difficulties = [float(dif) for dif in difficulties]
-    game_modes = [int(mode) for mode in game_modes]
-    max_difficulty = 0
-    for difficulty, mode in zip(difficulties, game_modes):
-        if mode == 0 and max_difficulty < difficulty:
-            max_difficulty = difficulty
-    return max_difficulty
+
 
 
 def error_msg(msg, err):
