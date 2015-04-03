@@ -15,9 +15,9 @@ import sys
 
 def init():
     global LOGIN_DATA, FAVOURITED_TIMES_, BEATMAP_ID_, STAR_DIFFICULTY_, GAME_MODE_, \
-            ARTIST_, TITLE_, USER_ID_, RANKED_, PENDING_, GRAVEYARDED_, PP_RANK_, CREATOR_, \
-            INVALID_CHARACTERS_, FIRST_PAGE, LAST_PAGE, MIN_FAVOURITED, MIN_DIFFICULTY, \
-            MIN_RANKED, MIN_NON_RANKED, MIN_PP_RANK, DOWNLOAD_FOLDER, ERROR_LOG
+        ARTIST_, TITLE_, USER_ID_, RANKED_, PENDING_, GRAVEYARDED_, PP_RANK_, CREATOR_, \
+        INVALID_CHARACTERS_, FIRST_PAGE, LAST_PAGE, MIN_FAVOURITED, MIN_DIFFICULTY, \
+        MIN_RANKED, MIN_NON_RANKED, MIN_PP_RANK, DOWNLOAD_FOLDER, ERROR_LOG
 
     LOGIN_DATA = {
         'username': 'krur',
@@ -99,7 +99,6 @@ def login(session):
     session.post('https://osu.ppy.sh/forum/ucp.php?mode=login', data=LOGIN_DATA)
 
 
-
 def scrape_data(session, beatmaps):
     scrape_beatmaps_id(session, beatmaps)
     scrape_beatmaps_source(session, beatmaps)
@@ -124,7 +123,6 @@ def scrape_beatmaps_id(session, beatmaps):
             error_msg('scrape_beatmaps_id: Error getting page ' + str(page) + '.', err)
 
 
-
 def scrape_beatmaps_source(session, beatmaps):
     to_remove = []
     for index, beatmap in enumerate(beatmaps):
@@ -139,7 +137,6 @@ def scrape_beatmaps_source(session, beatmaps):
     remove_beatmaps(beatmaps, to_remove)
 
 
-
 def scrape_beatmaps_json(session, beatmaps):
     to_remove = []
     for index, beatmap in enumerate(beatmaps):
@@ -152,7 +149,6 @@ def scrape_beatmaps_json(session, beatmaps):
                       + str(beatmap.id_) + '.', err)
             to_remove.append(index)
     remove_beatmaps(beatmaps, to_remove)
-
 
 
 def scrape_beatmaps_creator(session, beatmaps):
@@ -173,7 +169,6 @@ def scrape_beatmaps_creator(session, beatmaps):
                       + beatmap.id_ + '.', err)
             to_remove.append(index)
     remove_beatmaps(beatmaps, to_remove)
-
 
 
 def scrape_beatmaps_profile(session, beatmaps):
@@ -249,11 +244,28 @@ def ok_difficulty(beatmap):
 
 
 def star_difficulty(beatmap):
-
-    difficulties = STAR_DIFFICULTY_.findall(beatmap.json)
-    game_modes = GAME_MODE_.findall(beatmap.json)
-    difficulties = [float(dif) for dif in difficulties]
-    game_modes = [int(mode) for mode in game_modes]
+    try:
+        difficulties = STAR_DIFFICULTY_.findall(beatmap.json)
+        try:
+            difficulties = [float(dif) for dif in difficulties]
+        except Exception as err:
+            error_msg('star_difficulty: Error converting difficulties to float.', err)
+            return -1
+    except Exception as err:
+        error_msg('star_difficulty: Error finding difficulties in json of beatmap '
+                  + beatmap.id_ + '.', err)
+        return -1
+    try:
+        game_modes = GAME_MODE_.findall(beatmap.json)
+        try:
+            game_modes = [int(mode) for mode in game_modes]
+        except Exception as err:
+            error_msg('star_difficulty: Error converting game modes to int.', err)
+            return -1
+    except Exception as err:
+        error_msg('star_difficulty: Error finding game modes in json of beatmap '
+                  + beatmap.id_ + '.', err)
+        return -1
     max_difficulty = 0
     for difficulty, mode in zip(difficulties, game_modes):
         if mode == 0 and max_difficulty < difficulty:
@@ -261,23 +273,8 @@ def star_difficulty(beatmap):
     return max_difficulty
 
 
-def ok_favourited(beatmap):
-    try:
-        return favourited_times(beatmap) >= MIN_FAVOURITED
-    except Exception as err:
-        error_msg('ok_favourited: favourited_times returned unknown error.', err)
-        return False
-
-
-
-
-
 def ok_creator(beatmap):
-    try:
-        return ok_pp_rank(beatmap) or ok_kudosu(beatmap) or ok_maps(beatmap)
-    except Exception as err:
-        error_msg('ok_creator: ok_pp_rank or ok_kudosu or ok_maps returned unknown error.', err)
-        return False
+    return ok_pp_rank(beatmap) or ok_kudosu(beatmap) or ok_maps(beatmap)
 
 
 def ok_pp_rank(beatmap):
@@ -285,21 +282,19 @@ def ok_pp_rank(beatmap):
         pp_rank = PP_RANK_.search(beatmap.creator).group(1)
         return int(pp_rank) <= MIN_PP_RANK
     except Exception as err:
-        error_msg('ok_pp_rank: Could not find pp_rank regular expression in creator.', err)
+        error_msg('ok_pp_rank: Could not find pp_rank regular expression in creator of beatmap '
+                  + beatmap.id_ + '.', err)
         return False
 
-
-def ok_maps(beatmap):
-    try:
-        return ok_ranked(beatmap) or ok_non_ranked(beatmap)
-    except Exception as err:
-        error_msg('ok_maps: ok_ranked or ok_non_ranked returned unknown error.', err)
-        return False
 
 # TODO
 # FIRST FINISH SCRAPE_BEATMAPS_USER_PAGE
 def ok_kudosu(beatmap):
     return False
+
+
+def ok_maps(beatmap):
+    return ok_ranked(beatmap) or ok_non_ranked(beatmap)
 
 
 def ok_ranked(beatmap):
@@ -324,57 +319,62 @@ def ok_non_ranked(beatmap):
     return int(pending) + int(graveyarded) >= MIN_NON_RANKED
 
 
-def open_log_files():
-    try:
-        json_file = open('json.txt', 'w')
-    except Exception as err:
-        error_msg('open_log_files: Could not open json_file.', err)
-        json_file = None
-    try:
-        source_file = open('source.txt', 'w')
-    except Exception as err:
-        error_msg('open_log_files: Could not open source_file.', err)
-        source_file = None
-    try:
-        creator_file = open('creator.txt', 'w')
-    except Exception as err:
-        error_msg('open_log_files: Could not open creator_file.', err)
-        creator_file = None
-    try:
-        profile_file = open('profile.txt', 'w')
-    except Exception as err:
-        error_msg('open_log_files: Could not open profile_file.', err)
-        profile_file = None
-    try:
-        user_page_file = open('user_page.txt', 'w')
-    except Exception as err:
-        error_msg('open_log_files: Could not open user_page file.', err)
-        user_page_file = None
-
-    return (json_file, source_file, creator_file, profile_file, user_page_file)
+def ok_favourited(beatmap):
+    return favourited_times(beatmap) >= MIN_FAVOURITED
 
 
-def close_log_files(json_file, source_file, creator_file, profile_file, user_page_file):
+def favourited_times(beatmap):
     try:
-        json_file.close()
-    except Exception as err:
-        error_msg('close_log_files: Could not close json_file.', err)
+        number = FAVOURITED_TIMES_.search(beatmap.source).group(1)
+        return int(number)
+    except (AttributeError, IndexError):
+        return 0
+
+
+def download_beatmap(session, beatmap):
     try:
-        source_file.close()
+        absolute_path = os.path.join(os.path.join(DOWNLOAD_FOLDER, beatmap_name(beatmap) + '.osz'))
     except Exception as err:
-        error_msg('close_log_files: Could not close source_file.', err)
+        error_msg('download_beatmap: Could not make absolute path.', err)
+        return
+    beatmap_file = None
     try:
-        creator_file.close()
+        beatmap_file = open(absolute_path, 'wb')
+        try:
+            beatmap_data = session.get('https://osu.ppy.sh/d/' + beatmap.id_)
+            try:
+                beatmap_file.write(beatmap_data.content)
+            except Exception as err:
+                error_msg('download_beatmap: Could not write beatmap ' + beatmap.id_ + ' into file.', err)
+        except RequestException as err:
+            error_msg('download_beatmap: Could not download beatmap '
+                      + beatmap.id_ + ".", err)
     except Exception as err:
-        error_msg('close_log_files: Could not close creator_file.', err)
+        error_msg('download_beatmap: Could not open file.', err)
+    finally:
+        try:
+            beatmap_file.close()
+        except Exception as err:
+            error_msg('download_beatmap: Could not close file.', err)
+
+
+def beatmap_name(beatmap):
     try:
-        profile_file.close()
-    except Exception as err:
-        error_msg('close_log_files: Could not close profile_file.', err)
+        artist = ARTIST_.search(beatmap.json).group(1)
+    except (AttributeError, IndexError) as err:
+        error_msg('beatmap_name: Could not find artist of beatmap ' + beatmap.id_ + '.', err)
+        artist = 'DEFAULT'
     try:
-        user_page_file.close()
+        title = TITLE_.search(beatmap.json).group(1)
+    except (AttributeError, IndexError) as err:
+        error_msg('beatmap_name: Could not find title of baetmap ' + beatmap.id_ + '.', err)
+        title = 'DEFAULT'
+    try:
+        return INVALID_CHARACTERS_.sub('', str(beatmap.id_) + ' ' + artist + ' - ' + title)
     except Exception as err:
-        error_msg('close_log_files: Could not close user_page_file.', err)
+        error_msg('beatmap_name: Could not convert beatmap name to windows-like. Artist: '
+                  + artist + ' ,title: ' + title + '.', err)
+        return 'DEFAULT - DEFAULT'
 
 
 def log_data(beatmaps):
@@ -410,47 +410,57 @@ def log_data(beatmaps):
     close_log_files(json_file, source_file, creator_file, profile_file, user_page_file)
 
 
-
-
-def download_beatmap(session, beatmap):
+def open_log_files():
     try:
-        absolute_path = os.path.join(os.path.join(DOWNLOAD_FOLDER, beatmap_name(beatmap) + '.osz'))
+        json_file = open('json.txt', 'w')
     except Exception as err:
-        error_msg('download_beatmap: Could not make absolute path.', err)
-        return
-    beatmap_file = None
+        error_msg('open_log_files: Could not open json_file.', err)
+        json_file = None
     try:
-        beatmap_file = open(absolute_path, 'wb')
-        try:
-            beatmap_data = session.get('https://osu.ppy.sh/d/' + beatmap.id_)
-            try:
-                beatmap_file.write(beatmap_data.content)
-            except Exception as err:
-                error_msg('download_beatmap: Could not write beatmap ' + beatmap.id_ + ' into file.', err)
-        except RequestException as err:
-            error_msg('download_beatmap: Could not download beatmap '
-                      + beatmap.id_ + ".", err)
+        source_file = open('source.txt', 'w')
     except Exception as err:
-        error_msg('download_beatmap: Could not open file.', err)
-    finally:
-        try:
-            beatmap_file.close()
-        except Exception as err:
-            error_msg('download_beatmap: Could not close file.', err)
+        error_msg('open_log_files: Could not open source_file.', err)
+        source_file = None
+    try:
+        creator_file = open('creator.txt', 'w')
+    except Exception as err:
+        error_msg('open_log_files: Could not open creator_file.', err)
+        creator_file = None
+    try:
+        profile_file = open('profile.txt', 'w')
+    except Exception as err:
+        error_msg('open_log_files: Could not open profile_file.', err)
+        profile_file = None
+    try:
+        user_page_file = open('user_page.txt', 'w')
+    except Exception as err:
+        error_msg('open_log_files: Could not open user_page file.', err)
+        user_page_file = None
+
+    return json_file, source_file, creator_file, profile_file, user_page_file
 
 
-def beatmap_name(beatmap):
-    artist = ARTIST_.search(beatmap.json).group(1)
-    title = TITLE_.search(beatmap.json).group(1)
-    return INVALID_CHARACTERS_.sub('', str(beatmap.id_) + ' ' + artist + ' - ' + title)
-
-
-def favourited_times(beatmap):
-    number = FAVOURITED_TIMES_.search(beatmap.source).group(1)
-    return int(number)
-
-
-
+def close_log_files(json_file, source_file, creator_file, profile_file, user_page_file):
+    try:
+        json_file.close()
+    except Exception as err:
+        error_msg('close_log_files: Could not close json_file.', err)
+    try:
+        source_file.close()
+    except Exception as err:
+        error_msg('close_log_files: Could not close source_file.', err)
+    try:
+        creator_file.close()
+    except Exception as err:
+        error_msg('close_log_files: Could not close creator_file.', err)
+    try:
+        profile_file.close()
+    except Exception as err:
+        error_msg('close_log_files: Could not close profile_file.', err)
+    try:
+        user_page_file.close()
+    except Exception as err:
+        error_msg('close_log_files: Could not close user_page_file.', err)
 
 
 def error_msg(msg, err):
