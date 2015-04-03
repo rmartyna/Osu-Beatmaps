@@ -68,18 +68,19 @@ def main():
             return
         try:
             scrape_data(session, beatmaps)
+            try:
+                download_good_maps(session, beatmaps)
+            except Exception as err:
+                error_msg('Main: Error while downloading maps.', err)
+                return
         except RequestException as err:
             error_msg('Main: Could not scrape data properly.', err)
             return
-        try:
-            log_data(beatmaps)
-        except Exception as err:
-            error_msg('Main: Could not log data.', err)
-        try:
-            download_good_maps(session, beatmaps)
-        except Exception as err:
-            error_msg('Main: Error while downloading maps.', err)
-            return
+        finally:
+            try:
+                log_data(beatmaps)
+            except Exception as err:
+                error_msg('Main: Could not log data.', err)
     except RequestException as err:
         error_msg('Main: Could not open session.', err)
         return
@@ -101,26 +102,59 @@ def download_good_maps(session, beatmaps):
         os.makedirs(DOWNLOAD_FOLDER)
     except WindowsError:
         pass
-
-    for beatmap in beatmaps:
-        if beatmap.id_ not in database:
-            if ok_difficulty(beatmap) and (ok_creator(beatmap) or ok_favourited(beatmap)):
-                database.add(beatmap.id_)
-                download_beatmap(session, beatmap)
-
-    pickle.dump(database, open("database.dat", "wb"))
+    try:
+        for beatmap in beatmaps:
+            try:
+                int(beatmap.id_)
+            except (TypeError, ValueError):
+                continue
+            if beatmap.id_ not in database:
+                try:
+                    if ok_difficulty(beatmap) and (ok_creator(beatmap) or ok_favourited(beatmap)):
+                        try:
+                            database.add(beatmap.id_)
+                            try:
+                                download_beatmap(session, beatmap)
+                            except Exception as err:
+                                error_msg('download_good_maps: Could nto download beatmap.', err)
+                                continue
+                        except Exception as err:
+                            error_msg('download_good_maps: Could not add id ' + beatmap.id_ + ' to database.', err)
+                            continue
+                except Exception as err:
+                    error_msg('download_good_maps: Unknown exception, probably ok_difficulty, etc. failed.', err)
+                    continue
+    except Exception as err:
+        error_msg('download_good_maps: Unknown error, Ignoring.', err)
+    finally:
+        try:
+            pickle.dump(database, open("database.dat", "wb"))
+        except Exception as err:
+            error_msg('download_good_maps: Could not dump database.', err)
 
 
 def ok_favourited(beatmap):
-    return favourited_times(beatmap) >= MIN_FAVOURITED
+    try:
+        return favourited_times(beatmap) >= MIN_FAVOURITED
+    except Exception as err:
+        error_msg('ok_favourited: favourited_times returned unknown error.', err)
+        return False
 
 
 def ok_difficulty(beatmap):
-    return star_difficulty(beatmap) >= MIN_DIFFICULTY
+    try:
+        return star_difficulty(beatmap) >= MIN_DIFFICULTY
+    except Exception as err:
+        error_msg('ok_difficulty: star_difficulty returned unknown error.', err)
+        return False
 
 
 def ok_creator(beatmap):
-    return ok_pp_rank(beatmap) or ok_kudosu(beatmap) or ok_maps(beatmap)
+    try:
+        return ok_pp_rank(beatmap) or ok_kudosu(beatmap) or ok_maps(beatmap)
+    except Exception as err:
+        error_msg('ok_creator: ok_pp_rank or ok_kudosu or ok_maps returned unknown error.', err)
+        return False
 
 
 def ok_pp_rank(beatmap):
