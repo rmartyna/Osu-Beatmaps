@@ -1,4 +1,6 @@
 import re
+import requests
+
 
 LOGIN_DATA = None
 
@@ -15,6 +17,7 @@ GRAVEYARDED_ = None
 PP_RANK_ = None
 CREATOR_ = None
 INVALID_CHARACTERS_ = None
+LOGIN_PAGE_ = None
 
 FIRST_PAGE = None
 LAST_PAGE = None
@@ -39,12 +42,17 @@ LOGGED = None
 
 SESSION = None
 
+LOGIN_URL = None
+MAIN_PAGE_URL = None
+
+
 def init():
     global LOGIN_DATA, FAVOURITED_TIMES_, BEATMAP_ID_, STAR_DIFFICULTY_, GAME_MODE_, \
         ARTIST_, TITLE_, USER_ID_, RANKED_, PENDING_, GRAVEYARDED_, PP_RANK_, CREATOR_, \
-        INVALID_CHARACTERS_, FIRST_PAGE, LAST_PAGE, MIN_FAVOURITED, MIN_DIFFICULTY, \
+        INVALID_CHARACTERS_, LOGIN_PAGE_, FIRST_PAGE, LAST_PAGE, MIN_FAVOURITED, MIN_DIFFICULTY, \
         MIN_RANKED, MIN_NON_RANKED, MIN_PP_RANK, DOWNLOAD_FOLDER, ERROR_LOG, \
-        VERSION, DATE, EMAIL, GITHUB, USERNAME, PASSWORD, LOGGED, SESSION
+        VERSION, DATE, EMAIL, GITHUB, USERNAME, PASSWORD, LOGGED, SESSION, \
+        LOGIN_URL, MAIN_PAGE_URL
 
     LOGIN_DATA = {
         'username': None,
@@ -65,6 +73,7 @@ def init():
     PP_RANK_ = re.compile(r'\"pp_rank\":\"([0-9]+)\"')
     CREATOR_ = re.compile(r'\"creator\":\"([^\"]+)\"')
     INVALID_CHARACTERS_ = re.compile(r'[\\/\?:\*<>|"]')
+    LOGIN_PAGE_ = re.compile(r'Welcome, <b><a href=\"/u/([0-9]+)\">')
 
     FIRST_PAGE = 1
     LAST_PAGE = 125
@@ -88,3 +97,6 @@ def init():
     LOGGED = False
 
     SESSION = requests.Session()
+
+    LOGIN_URL = 'https://osu.ppy.sh/forum/ucp.php?mode=login'
+    MAIN_PAGE_URL = 'https://osu.ppy.sh'

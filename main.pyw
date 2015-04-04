@@ -3,6 +3,7 @@ import pickle
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from init import *
+import connector
 
 
 class MyMainWindow(QMainWindow):
@@ -11,11 +12,9 @@ class MyMainWindow(QMainWindow):
         super(MyMainWindow, self).__init__(parent)
 
         self.load_settings()
-        self.connect_to_osu()
-        if PASSWORD is not None:
-            self.try_login(USERNAME, PASSWORD)
         self.set_widget()
         self.add_file_menu()
+        self.try_login(USERNAME, PASSWORD)
 
         self.setWindowTitle("Osu Beatmaps!")
 
@@ -44,19 +43,12 @@ class MyMainWindow(QMainWindow):
         except KeyError:
             pass
 
-    def connect_to_osu(self):
-
-
     def add_file_menu(self):
         self.login_action = self.menuBar().addAction("Login")
         self.connect(self.login_action, SIGNAL("triggered()"), self.pop_login_dialog)
 
         self.logout_action = self.menuBar().addAction("Logout")
         self.connect(self.logout_action, SIGNAL("triggered()"), self.pop_logout_dialog)
-        if PASSWORD is None:
-            self.logout_action.setCheckable(False)
-        else:
-            self.login_action.setCheckable(True)
 
         self.options_action = self.menuBar().addAction("Options")
         self.connect(self.options_action, SIGNAL("triggered()"), self.pop_options_dialog)
@@ -67,7 +59,7 @@ class MyMainWindow(QMainWindow):
     def pop_login_dialog(self):
         login_dialog = LoginDialog(self)
         if login_dialog.exec_():
-            print("accepted")
+            pass
 
     def pop_logout_dialog(self):
         global PASSWORD
@@ -86,7 +78,17 @@ class MyMainWindow(QMainWindow):
         AboutDialog(self).exec_()
 
     def try_login(self, username, password):
-        pass
+        if type(username) is not str or type(password) is not str:
+            return False
+        connector.login(username, password)
+        if connector.check_if_logged():
+            self.login_action.setCheckable(False)
+            self.logout_action.setCheckable(True)
+            return True
+        else:
+            self.login_action.setCheckable(True)
+            self.logout_action.setCheckable(False)
+            return False
 
 
 
@@ -139,10 +141,22 @@ class LoginDialog(QDialog):
         layout.addWidget(self.cancel_button, 4, 1)
         self.setLayout(layout)
 
-        self.connect(self.okButton, SIGNAL("clicked()"), self, SLOT("accept()"))
-        self.connect(self.cancelButton, SIGNAL("clicked()"), self, SLOT("reject()"))
+        self.connect(self.login_button, SIGNAL("clicked()"), self.try_login)
+        self.connect(self.cancel_button, SIGNAL("clicked()"), self, SLOT("reject()"))
 
         self.setWindowTitle("Login")
+
+    def try_login(self):
+        global USERNAME, PASSWORD
+        if self.parent().try_login(self.username.text(), self.password.text()):
+            if self.username_check_box.isChecked():
+                USERNAME = self.username.text()
+            if self.password_check_box.isChecked():
+                PASSWORD = self.password.text()
+            self.accept()
+        else:
+            self.password.clear()
+
 
 
 class LogoutDialog(QDialog):
@@ -202,7 +216,7 @@ class AboutDialog(QDialog):
         self.setWindowTitle("About")
 
 def main():
-    init.init()
+    init()
     app = QApplication(sys.argv)
     window = MyMainWindow()
     window.show()
