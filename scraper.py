@@ -39,7 +39,7 @@ def init():
     INVALID_CHARACTERS_ = re.compile(r'[\\/\?:\*<>|"]')
 
     FIRST_PAGE = 1
-    LAST_PAGE = 1
+    LAST_PAGE = 125
 
     MIN_FAVOURITED = 5
     MIN_DIFFICULTY = 4.0
@@ -47,7 +47,7 @@ def init():
     MIN_NON_RANKED = 5
     MIN_PP_RANK = 10000
 
-    DOWNLOAD_FOLDER = r'C:\Users\user\Desktop\beatmaps'
+    DOWNLOAD_FOLDER = r'E:\beatmaps'
     ERROR_LOG = open('error_log.txt', 'w')
 
 
@@ -65,27 +65,18 @@ def main():
     session = None
     try:
         session = requests.Session()
-        beatmaps = []
         try:
             login(session)
         except RequestException as err:
             error_msg('Main: Could not login into Osu!', err)
             return
         try:
-            scrape_data(session, beatmaps)
-            try:
+            for page in range(FIRST_PAGE, LAST_PAGE + 1):
+                beatmaps = []
+                scrape_data(session, beatmaps, page)
                 download_good_maps(session, beatmaps)
-            except Exception as err:
-                error_msg('Main: Error while downloading maps.', err)
-                return
-        except Exception as err:
-            error_msg('Main: Unknown error while scraping data.', err)
-            return
         finally:
-            try:
-                log_data(beatmaps)
-            except Exception as err:
-                error_msg('Main: Could not log data.', err)
+            log_data(beatmaps)
     except RequestException as err:
         error_msg('Main: Could not open session.', err)
     finally:
@@ -99,8 +90,8 @@ def login(session):
     session.post('https://osu.ppy.sh/forum/ucp.php?mode=login', data=LOGIN_DATA)
 
 
-def scrape_data(session, beatmaps):
-    scrape_beatmaps_id(session, beatmaps)
+def scrape_data(session, beatmaps, page):
+    scrape_beatmaps_id(session, beatmaps, page)
     scrape_beatmaps_source(session, beatmaps)
     scrape_beatmaps_json(session, beatmaps)
     scrape_beatmaps_creator(session, beatmaps)
@@ -108,24 +99,25 @@ def scrape_data(session, beatmaps):
     scrape_beatmaps_user_page(session, beatmaps)
 
 
-def scrape_beatmaps_id(session, beatmaps):
-    for page in range(FIRST_PAGE, LAST_PAGE + 1):
+def scrape_beatmaps_id(session, beatmaps, page):
+    print('scrape_beatmaps_id ' + str(page) + '/' + str(LAST_PAGE))
+    try:
+        response = session.get('https://osu.ppy.sh/p/beatmaplist?l=1&r=4&q=&g=0&la=0&s=4&o=1&m=-1&page='
+                               + str(page))
         try:
-            response = session.get('https://osu.ppy.sh/p/beatmaplist?l=1&r=4&q=&g=0&la=0&s=4&o=1&m=-1&page='
-                                   + str(page))
-            try:
-                result = BEATMAP_ID_.findall(response.content)
-                for beatmap_id in result:
-                    beatmaps.append(Beatmap(beatmap_id))
-            except Exception as err:
-                error_msg('scrape_beatmaps_id: Error finding ids on page.', err)
-        except RequestException as err:
-            error_msg('scrape_beatmaps_id: Error getting page ' + str(page) + '.', err)
+            result = BEATMAP_ID_.findall(response.content)
+            for beatmap_id in result:
+                beatmaps.append(Beatmap(beatmap_id))
+        except Exception as err:
+            error_msg('scrape_beatmaps_id: Error finding ids on page.', err)
+    except RequestException as err:
+        error_msg('scrape_beatmaps_id: Error getting page ' + str(page) + '.', err)
 
 
 def scrape_beatmaps_source(session, beatmaps):
     to_remove = []
     for index, beatmap in enumerate(beatmaps):
+        print('scrape_beatmaps_source ' + str(index+1) + '/' + str(len(beatmaps)))
         try:
             response = session.get('https://osu.ppy.sh/s/'
                                    + beatmap.id_)
@@ -140,6 +132,7 @@ def scrape_beatmaps_source(session, beatmaps):
 def scrape_beatmaps_json(session, beatmaps):
     to_remove = []
     for index, beatmap in enumerate(beatmaps):
+        print('scrape_beatmaps_json ' + str(index+1) + '/' + str(len(beatmaps)))
         try:
             response = session.get('https://osu.ppy.sh/api/get_beatmaps?k=c5878839513d6eb99dbf09f8244653332b93eb3c&s='
                                    + beatmap.id_)
@@ -154,6 +147,7 @@ def scrape_beatmaps_json(session, beatmaps):
 def scrape_beatmaps_creator(session, beatmaps):
     to_remove = []
     for index, beatmap in enumerate(beatmaps):
+        print('scrape_beatmaps_creator ' + str(index+1) + '/' + str(len(beatmaps)))
         try:
             creator = CREATOR_.search(beatmap.json).group(1)
             try:
@@ -174,6 +168,7 @@ def scrape_beatmaps_creator(session, beatmaps):
 def scrape_beatmaps_profile(session, beatmaps):
     to_remove = []
     for index, beatmap in enumerate(beatmaps):
+        print('scrape_beatmaps_profile ' + str(index+1) + '/' + str(len(beatmaps)))
         try:
             user_id = USER_ID_.search(beatmap.creator).group(1)
             try:
@@ -219,7 +214,8 @@ def download_good_maps(session, beatmaps):
             error_msg('download_good_maps: Could not make download directory.', err)
             return
     try:
-        for beatmap in beatmaps:
+        for index, beatmap in enumerate(beatmaps):
+            print('download_good_maps ' + str(index+1) + '/' + str(len(beatmaps)))
             if beatmap.id_ not in database:
                 if ok_difficulty(beatmap) and (ok_creator(beatmap) or ok_favourited(beatmap)):
                     try:
@@ -401,11 +397,13 @@ def log_data(beatmaps):
                 profile_file.write(beatmap.profile + '\n')
             except Exception as err:
                 error_msg('log_data: Could not write to profile_file.', err)
-        if user_page_file is not None:
-            try:
-                user_page_file.write(beatmap.user_page + '\n')
-            except Exception as err:
-                error_msg('log_data: Could not write to user_page_file.', err)
+        # TODO
+        # REMOVE COMMENTS AFTER USER PAGE SCRAPING FIXED
+        # if user_page_file is not None:
+        #    try:
+        #        user_page_file.write(beatmap.user_page + '\n')
+        #    except Exception as err:
+        #        error_msg('log_data: Could not write to user_page_file.', err)
 
     close_log_files(json_file, source_file, creator_file, profile_file, user_page_file)
 
