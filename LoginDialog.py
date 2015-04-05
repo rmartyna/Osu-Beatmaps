@@ -1,5 +1,6 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from init import *
 import logger
 
 
@@ -11,14 +12,14 @@ class LoginDialog(QDialog):
         logger.error_msg("__init__: Started LoginDialog.", None)
 
         username_label = QLabel("Username: ")
-        if USERNAME is None:
+        if SETTINGS['USERNAME'] is None:
             self.username = QLineEdit()
         else:
-            self.username = QLineEdit(USERNAME)
+            self.username = QLineEdit(SETTINGS['USERNAME'])
         password_label = QLabel("Password: ")
         self.password = QLineEdit()
         self.username_check_box = QCheckBox("Remember username ")
-        if USERNAME is not None:
+        if SETTINGS['USERNAME'] is not None:
             self.username_check_box.setChecked(True)
         self.password_check_box = QCheckBox("Remember password ")
         self.login_button = QPushButton("Login")
@@ -44,13 +45,14 @@ class LoginDialog(QDialog):
 
     def try_login(self):
         logger.error_msg("try_login: Checking if given username and password are ok.", None)
-        global USERNAME, PASSWORD
         if self.parent().try_login(str(self.username.text()), str(self.password.text())):
             logger.error_msg("try_login: Successful login.", None)
             if self.username_check_box.isChecked():
-                USERNAME = self.username.text()
+                logger.error_msg("try_login: Remember username is checked.", None)
+                SETTINGS['USERNAME'] = str(self.username.text())
             if self.password_check_box.isChecked():
-                PASSWORD = self.password.text()
+                logger.error_msg("try_login: Remember password is checked.", None)
+                SETTINGS['PASSWORD'] = str(self.password.text())
             self.accept()
         else:
             logger.error_msg("try_login: Failed login.", None)

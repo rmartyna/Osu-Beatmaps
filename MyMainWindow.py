@@ -21,7 +21,7 @@ class MyMainWindow(QMainWindow):
         logger.error_msg("__init__: Set main widget.", None)
         self.add_file_menu()
         logger.error_msg("__init__: Added file menu.", None)
-        self.try_login(USERNAME, PASSWORD)
+        self.try_login(SETTINGS['USERNAME'], SETTINGS['PASSWORD'])
         logger.error_msg("__init__: Tried to login.", None)
 
         self.setWindowTitle("Osu Beatmaps!")
@@ -57,11 +57,10 @@ class MyMainWindow(QMainWindow):
         logger.error_msg("pop_login_dialog: Finished LoginDialog.", None)
 
     def pop_logout_dialog(self):
-        global PASSWORD
         logger.error_msg("pop_logout_dialog: Started LogoutDialog.", None)
         if LogoutDialog.LogoutDialog(self).exec_():
             logger.error_msg("pop_logout_dialog: LogoutDialog accepted.", None)
-            PASSWORD = None
+            SETTINGS['PASSWORD'] = None
             logger.error_msg("pop_logout_dialog: Resetting connection.", None)
             connector.reset_connection()
             logger.error_msg("pop_logout_dialog: Changing login/logout enabled flags.", None)

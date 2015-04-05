@@ -4,29 +4,28 @@ from init import *
 
 
 def load_settings():
-    global USERNAME, PASSWORD, DOWNLOAD_FOLDER, SETTINGS
     logger.error_msg("load_settings: Started loading settings.", None)
     try:
-        SETTINGS = pickle.load(open("config.dat", "rb"))
+        settings = pickle.load(open("config.dat", "rb"))
         logger.error_msg("load_settings: Found config file.", None)
     except IOError:
-        SETTINGS = dict()
+        settings = dict()
         logger.error_msg("load_settings: Could not find config file", None)
 
     try:
-        USERNAME = SETTINGS["username"]
+        SETTINGS['USERNAME'] = settings["USERNAME"]
         logger.error_msg("load_settings: Loaded username.", None)
     except KeyError:
         logger.error_msg("load_settings: Could not load username.", None)
         pass
     try:
-        PASSWORD = SETTINGS["password"]
+        SETTINGS['PASSWORD'] = settings["PASSWORD"]
         logger.error_msg("load_settings: Loaded password.", None)
     except KeyError:
         logger.error_msg("load_settings: Could not load password.", None)
         pass
     try:
-        DOWNLOAD_FOLDER = SETTINGS["download_folder"]
+        SETTINGS['DOWNLOAD_FOLDER'] = settings["DOWNLOAD_FOLDER"]
         logger.error_msg("load_settings: Loaded download folder.", None)
     except KeyError:
         logger.error_msg("load_settings: Could not load download folder.", None)
@@ -35,6 +34,9 @@ def load_settings():
 
 def save_settings():
     try:
+        print(SETTINGS['USERNAME'])
+        print(SETTINGS['PASSWORD'])
+        print(SETTINGS['DOWNLOAD_FOLDER'])
         pickle.dump(SETTINGS, open("config.dat", "wb"))
         logger.error_msg("save_settings: Saved settings.", None)
     except Exception as err:

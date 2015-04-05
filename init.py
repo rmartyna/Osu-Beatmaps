@@ -33,7 +33,7 @@ MIN_RANKED = 1
 MIN_NON_RANKED = 5
 MIN_PP_RANK = 10000
 
-DOWNLOAD_FOLDER = r'E:\beatmaps'
+
 ERROR_LOG = open('error_log.txt', 'w')
 
 VERSION = "0.1"
@@ -41,13 +41,12 @@ DATE = "4th April 2015"
 EMAIL = "rmartyna94@gmail.com"
 GITHUB = r"https://github.com/rmartyna/Osu-Beatmaps/"
 
-USERNAME = None
-PASSWORD = None
-LOGGED = False
+SETTINGS = {
+    'USERNAME': None,
+    'PASSWORD': None,
+    'DOWNLOAD_FOLDER': r'E:\beatmaps'}
 
 SESSION = requests.Session()
 
 LOGIN_URL = 'https://osu.ppy.sh/forum/ucp.php?mode=login'
 MAIN_PAGE_URL = 'https://osu.ppy.sh'
-
-SETTINGS = None
