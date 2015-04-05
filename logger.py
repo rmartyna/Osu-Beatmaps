@@ -4,6 +4,7 @@ from init import *
 
 
 def log_data(beatmaps):
+    error_msg("log_data: Started logging.", None)
     json_file, source_file, creator_file, profile_file, user_page_file = open_log_files()
 
     for beatmap in beatmaps:
@@ -36,9 +37,11 @@ def log_data(beatmaps):
         #        error_msg('log_data: Could not write to user_page_file.', err)
 
     close_log_files(json_file, source_file, creator_file, profile_file, user_page_file)
+    error_msg("log_data: Finished logging.", None)
 
 
 def open_log_files():
+    error_msg("open_log_files: Opening files.", None)
     try:
         json_file = open('json.txt', 'w')
     except Exception as err:
@@ -69,6 +72,8 @@ def open_log_files():
 
 
 def close_log_files(json_file, source_file, creator_file, profile_file, user_page_file):
+
+    error_msg("close_log_files: Closing files.", None)
     try:
         json_file.close()
     except Exception as err:
