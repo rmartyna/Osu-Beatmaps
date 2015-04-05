@@ -17,8 +17,6 @@ class MyMainWindow(QMainWindow):
         super(MyMainWindow, self).__init__(parent)
 
         logger.error_msg("__init__: Started MyMainWindow.", None)
-        self.load_settings()
-        logger.error_msg("__init__: Loaded settings.", None)
         self.set_widget()
         logger.error_msg("__init__: Set main widget.", None)
         self.add_file_menu()

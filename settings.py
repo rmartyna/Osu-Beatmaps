@@ -3,7 +3,7 @@ import logger
 from init import *
 
 
-def load_settings(self):
+def load_settings():
     global USERNAME, PASSWORD, DOWNLOAD_FOLDER, SETTINGS
     logger.error_msg("load_settings: Started loading settings.", None)
     try:
@@ -33,7 +33,7 @@ def load_settings(self):
         pass
 
 
-def save_settings(self):
+def save_settings():
     try:
         pickle.dump(SETTINGS, open("config.dat", "wb"))
         logger.error_msg("save_settings: Saved settings.", None)
