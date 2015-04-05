@@ -19,9 +19,11 @@ class LoginDialog(QDialog):
         password_label = QLabel("Password: ")
         self.password = QLineEdit()
         self.username_check_box = QCheckBox("Remember username ")
+        self.password_check_box = QCheckBox("Remember password ")
         if SETTINGS['USERNAME'] is not None:
             self.username_check_box.setChecked(True)
-        self.password_check_box = QCheckBox("Remember password ")
+        else:
+            self.password_check_box.setEnabled(False)
         self.login_button = QPushButton("Login")
         self.cancel_button = QPushButton("Cancel")
 
@@ -38,6 +40,8 @@ class LoginDialog(QDialog):
 
         self.connect(self.login_button, SIGNAL("clicked()"), self.try_login)
         self.connect(self.cancel_button, SIGNAL("clicked()"), self, SLOT("reject()"))
+        self.connect(self.username_check_box, SIGNAL("stateChanged(int)"), self.username_check_box_changed)
+        self.connect(self.password_check_box, SIGNAL("stateChanged(int)"), self.password_check_box_changed)
 
         self.setWindowTitle("Login")
 
@@ -50,10 +54,28 @@ class LoginDialog(QDialog):
             if self.username_check_box.isChecked():
                 logger.error_msg("try_login: Remember username is checked.", None)
                 SETTINGS['USERNAME'] = str(self.username.text())
+            else:
+                logger.error_msg("try_login: Remember username is not checked.", None)
+                SETTINGS['USERNAME'] = None
             if self.password_check_box.isChecked():
                 logger.error_msg("try_login: Remember password is checked.", None)
                 SETTINGS['PASSWORD'] = str(self.password.text())
+            else:
+                logger.error_msg("try_login: Remember password is not checked.", None)
+                SETTINGS['PASSWORD'] = None
             self.accept()
         else:
             logger.error_msg("try_login: Failed login.", None)
             self.password.clear()
+
+    def username_check_box_changed(self, value):
+        if value == 0:
+            self.password_check_box.setEnabled(False)
+        if value == 2:
+            self.password_check_box.setEnabled(True)
+
+    def password_check_box_changed(self, value):
+        if value == 0:
+            self.username_check_box.setEnabled(True)
+        if value == 2:
+            self.username_check_box.setEnabled(False)
