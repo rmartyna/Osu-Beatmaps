@@ -2,6 +2,7 @@ from __future__ import print_function
 import logger
 from init import *
 import Beatmap
+import requests
 
 
 # TODO
@@ -23,6 +24,8 @@ def scrape_data(beatmaps, page):
     logger.error_msg("scrape_data: Finished scraping profile.", None)
     scrape_beatmaps_user_page(beatmaps)
     logger.error_msg("scrape_data: Finished scraping user_page", None)
+    scrape_beatmaps_images(beatmaps)
+    logger.error_msg("scrape_data: Finished scraping images.", None)
     logger.error_msg("scrape_data: Finished scraping.", None)
 
 
@@ -113,6 +116,33 @@ def scrape_beatmaps_profile(beatmaps):
 # NEED TO FAKE JAVASCRIPT
 def scrape_beatmaps_user_page(beatmaps):
     pass
+
+
+def scrape_beatmaps_images(beatmaps):
+    for index, beatmap in enumerate(beatmaps):
+        try:
+            image_url = IMAGE_URL_.search(beatmap.source).group(1)
+            try:
+                image = SESSION.get('https:' + image_url)
+                try:
+                    f = open(beatmap.id_ + '.jpg', 'wb')
+                    try:
+                        f.write(image.content)
+                        try:
+                            f.close()
+                        except Exception as err:
+                            logger.error_msg('scrape_beatmaps_images: Could not close file of betamap '
+                                             + beatmap.id_ + '.', err)
+                    except Exception as err:
+                        logger.error_msg('scrape_beatmaps_images: Could not write image of beatmap '
+                                         + beatmap.id_ + ' to file.', err)
+                except Exception as err:
+                    logger.error_msg('scrape_beatmaps_images: Could not open file for imgage of beatmap '
+                                     + beatmap.id_ + '.', err)
+            except requests.ConnectionError as err:
+                logger.error_msg('scrape_beatmaps_images: Could not download image ' + image_url + '.', err)
+        except (AttributeError, IndexError) as err:
+            logger.error_msg('scrape_beatmaps_images: Could not find image url of beatmap ' + beatmap.id_ + '.', err)
 
 
 def remove_beatmaps(beatmaps, to_remove):

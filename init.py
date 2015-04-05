@@ -22,6 +22,7 @@ PP_RANK_ = re.compile(r'\"pp_rank\":\"([0-9]+)\"')
 CREATOR_ = re.compile(r'\"creator\":\"([^\"]+)\"')
 INVALID_CHARACTERS_ = re.compile(r'[\\/\?:\*<>|"]')
 LOGIN_PAGE_ = re.compile(r'Welcome, <b><a href=\"/u/([0-9]+)\">')
+IMAGE_URL_ = re.compile(r'<img class=\'bmt\' src=\"([^\"]+)\">')
 
 FIRST_PAGE = 1
 LAST_PAGE = 125

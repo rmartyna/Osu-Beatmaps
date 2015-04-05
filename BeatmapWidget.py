@@ -10,14 +10,17 @@ class BeatmapWidget(QWidget):
         logger.error_msg("__init__: Started BeatmapWidget.", None)
 
         self.add_widgets(beatmap)
-        self.setMinimumHeight(100)
+        self.setMinimumHeight(120)
 
         logger.error_msg("__init__: Finished BeatmapWidget.", None)
 
     def add_widgets(self, beatmap):
         self.layout = QGridLayout()
 
+        self.imageLabel = QLabel()
+        self.imageLabel.setPicture(beatmap.get_picture())
         self.nameLabel = QLabel(beatmap.get_name())
-        self.layout.addWidget(self.nameLabel, 0, 0)
+        self.layout.addWidget(self.imageLabel, 0, 0, 1, 2)
+        self.layout.addWidget(self.nameLabel, 0, 0, 1, 8)
 
         self.setLayout(self.layout)

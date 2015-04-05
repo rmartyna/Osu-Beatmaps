@@ -1,4 +1,5 @@
 from init import *
+from PyQt4.QtGui import QPicture
 import logger
 
 class Beatmap:
@@ -12,6 +13,7 @@ class Beatmap:
         self.artist = None
         self.title = None
         self.name = None
+        self.picture = None
 
 
     def get_name(self):
@@ -35,3 +37,19 @@ class Beatmap:
                                  + self.artist + ' ,title: ' + self.title + '.', err)
                 self.name = 'DEFAULT - DEFAULT'
         return self.name
+
+    def get_picture(self):
+        logger.error_msg("get_image: Getting picture of beatmap: " + self.id_ + '.', None)
+        if self.picture is None:
+            logger.error_msg("get_image: Picture is None. Opening picture.", None)
+            try:
+                self.picture = QPicture()
+                self.picture.load(self.id_ + '.jpg')
+            except Exception as err:
+                logger.error_msg("get_image: Could not load beatmap picture.", None)
+                try:
+                    self.picture = QPicture()
+                    self.picture.load("icon.png")
+                except Exception as err:
+                    logger.error_msg("get_image: Could not load default beatmap picture.", None)
+        return self.picture
