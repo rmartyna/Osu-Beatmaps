@@ -1,6 +1,7 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import logger
+import images
 
 
 class OptionsDialog(QDialog):
@@ -9,6 +10,9 @@ class OptionsDialog(QDialog):
         super(OptionsDialog, self).__init__(parent)
 
         logger.error_msg("__init__: Started OptionsDialog.", None)
+
+        self.setWindowTitle("Options")
+        self.setWindowIcon(images.get_icon())
 
         logger.error_msg("__init__: Finished OptionsDialog.", None)
 

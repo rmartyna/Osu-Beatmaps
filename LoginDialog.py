@@ -2,6 +2,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from init import *
 import logger
+import images
 
 
 class LoginDialog(QDialog):
@@ -44,6 +45,7 @@ class LoginDialog(QDialog):
         self.connect(self.password_check_box, SIGNAL("stateChanged(int)"), self.password_check_box_changed)
 
         self.setWindowTitle("Login")
+        self.setWindowIcon(images.get_icon())
 
         logger.error_msg("__init__: Finished LoginDialog.", None)
 

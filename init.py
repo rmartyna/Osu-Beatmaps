@@ -1,6 +1,6 @@
 import re
 import requests
-
+from PyQt4.QtGui import QIcon
 
 LOGIN_DATA = {
     'username': None,

@@ -1,6 +1,7 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import logger
+import images
 
 
 class ExitDialog(QDialog):
@@ -24,5 +25,6 @@ class ExitDialog(QDialog):
         self.connect(self.noButton, SIGNAL("clicked()"), self, SLOT("reject()"))
 
         self.setWindowTitle("Logout")
+        self.setWindowIcon(images.get_icon())
 
         logger.error_msg("__init__: Finished ExitDialog.", None)

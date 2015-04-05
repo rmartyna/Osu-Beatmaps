@@ -2,6 +2,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from init import *
 import logger
+import images
 
 
 class AboutDialog(QDialog):
@@ -31,5 +32,6 @@ class AboutDialog(QDialog):
         self.connect(self.button, SIGNAL("clicked()"), self, SLOT("accept()"))
 
         self.setWindowTitle("About")
+        self.setWindowIcon(images.get_icon())
 
         logger.error_msg("__init__: Finished AboutDialog.", None)

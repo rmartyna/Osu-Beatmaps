@@ -7,12 +7,10 @@ import MyMainWindow
 
 def main():
     settings.load_settings()
-
     app = QApplication(sys.argv)
     window = MyMainWindow.MyMainWindow()
     window.show()
     app.exec_()
-
     settings.save_settings()
 
 if __name__ == "__main__":

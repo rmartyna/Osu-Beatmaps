@@ -9,6 +9,7 @@ import LogoutDialog
 import OptionsDialog
 import AboutDialog
 import ExitDialog
+import images
 
 
 class MyMainWindow(QMainWindow):
@@ -25,6 +26,7 @@ class MyMainWindow(QMainWindow):
         logger.error_msg("__init__: Tried to login.", None)
 
         self.setWindowTitle("Osu Beatmaps!")
+        self.setWindowIcon(images.get_icon())
 
         logger.error_msg("__init__: Finished MyMainWindow.", None)
 
