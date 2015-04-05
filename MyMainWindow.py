@@ -10,6 +10,8 @@ import OptionsDialog
 import AboutDialog
 import ExitDialog
 import images
+import scraper
+import evaluator
 
 
 class MyMainWindow(QMainWindow):
@@ -48,8 +50,8 @@ class MyMainWindow(QMainWindow):
         self.about_action = self.menuBar().addAction("About")
         self.connect(self.about_action, SIGNAL("triggered()"), self.pop_about_dialog)
 
-        self.add_widget_action = self.menuBar().addAction("Add Widget")
-        self.connect(self.add_widget_action, SIGNAL("triggered()"), self.add_widget)
+        self.download_and_show_action = self.menuBar().addAction("Download and Show")
+        self.connect(self.download_and_show_action, SIGNAL("triggered()"), self.download_and_show)
 
         self.exit_action = self.menuBar().addAction("Exit")
         self.connect(self.exit_action, SIGNAL("triggered()"), self.pop_exit_dialog)
@@ -83,15 +85,26 @@ class MyMainWindow(QMainWindow):
         AboutDialog.AboutDialog(self).exec_()
         logger.error_msg("pop_about_dialog: Finished AboutDialog.", None)
 
-    def add_widget(self):
-        logger.error_msg("add_widget: Adding widget.", None)
+    def add_widget(self, beatmap):
+        #logger.error_msg("add_widget: Adding widget.", None)
         item = QListWidgetItem()
         item.setSizeHint(QSize(100, 100))
-        widget = BeatmapWidget.BeatmapWidget()
+        widget = BeatmapWidget.BeatmapWidget(beatmap, self)
         self.items.append((item, widget))
         self.main_widget.addItem(item)
         self.main_widget.setItemWidget(item, widget)
-        logger.error_msg("add_widget: Added widget.", None)
+        #logger.error_msg("add_widget: Added widget.", None)
+
+    def download_and_show(self):
+        logger.error_msg("download_and_show: Start of function.", None)
+        beatmaps = []
+        scraper.scrape_data(beatmaps, 1)
+        logger.error_msg("download_and_show: Finished scraping.", None)
+        evaluator.filter(beatmaps)
+        logger.error_msg("download_and_show: Finished evaluating.", None)
+        for beatmap in beatmaps:
+            self.add_widget(beatmap)
+        logger.error_msg("download_and_show: Finished making widgets.", None)
 
     def pop_exit_dialog(self):
         logger.error_msg("pop_exit_dialog: Started ExitDialog.", None)

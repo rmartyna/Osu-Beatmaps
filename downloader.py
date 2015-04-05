@@ -5,7 +5,7 @@ import logger
 import evaluator
 
 
-def download_good_maps(session, beatmaps):
+def download_good_maps(beatmaps):
     try:
         database = pickle.load(open("database.dat", "rb"))
     except IOError:
@@ -26,7 +26,7 @@ def download_good_maps(session, beatmaps):
                     try:
                         database.add(beatmap.id_)
                         try:
-                            download_beatmap(session, beatmap)
+                            download_beatmap(beatmap)
                         except Exception as err:
                             logger.error_msg('download_good_maps: Could not download beatmap ' + beatmap.id_ + '.', err)
                             continue
@@ -40,10 +40,10 @@ def download_good_maps(session, beatmaps):
             logger.error_msg('download_good_maps: Could not dump database.', err)
 
 
-def download_beatmap(session, beatmap):
+def download_beatmap(beatmap):
     try:
         absolute_path = os.path.join(os.path.join(SETTINGS['DOWNLOAD_FOLDER'],
-                                                  evaluator.beatmap_name(beatmap) + '.osz'))
+                                                  beatmap.get.name() + '.osz'))
     except Exception as err:
         logger.error_msg('download_beatmap: Could not make absolute path.', err)
         return
@@ -51,7 +51,7 @@ def download_beatmap(session, beatmap):
     try:
         beatmap_file = open(absolute_path, 'wb')
         try:
-            beatmap_data = session.get('https://osu.ppy.sh/d/' + beatmap.id_)
+            beatmap_data = SESSION.get('https://osu.ppy.sh/d/' + beatmap.id_)
             try:
                 beatmap_file.write(beatmap_data.content)
             except Exception as err:

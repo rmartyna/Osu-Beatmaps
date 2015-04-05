@@ -42,7 +42,7 @@ GITHUB = r"https://github.com/rmartyna/Osu-Beatmaps/"
 SETTINGS = {
     'USERNAME': None,
     'PASSWORD': None,
-    'DOWNLOAD_FOLDER': r'E:\beatmaps'}
+    'DOWNLOAD_FOLDER': r'D:\beatmaps'}
 
 SESSION = requests.Session()
 

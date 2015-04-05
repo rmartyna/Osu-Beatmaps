@@ -94,20 +94,12 @@ def favourited_times(beatmap):
         return 0
 
 
-def beatmap_name(beatmap):
-    try:
-        artist = ARTIST_.search(beatmap.json).group(1)
-    except (AttributeError, IndexError) as err:
-        logger.error_msg('beatmap_name: Could not find artist of beatmap ' + beatmap.id_ + '.', err)
-        artist = 'DEFAULT'
-    try:
-        title = TITLE_.search(beatmap.json).group(1)
-    except (AttributeError, IndexError) as err:
-        logger.error_msg('beatmap_name: Could not find title of baetmap ' + beatmap.id_ + '.', err)
-        title = 'DEFAULT'
-    try:
-        return INVALID_CHARACTERS_.sub('', str(beatmap.id_) + ' ' + artist + ' - ' + title)
-    except Exception as err:
-        logger.error_msg('beatmap_name: Could not convert beatmap name to windows-like. Artist: '
-                         + artist + ' ,title: ' + title + '.', err)
-        return 'DEFAULT - DEFAULT'
+def filter(beatmaps):
+    logger.error_msg("filter: Filtering maps.", None)
+    logger.error_msg("filter: Before filtering: " + str(len(beatmaps)) + " maps.", None)
+    for i in range(len(beatmaps) - 1, -1, -1):
+        if ok_difficulty(beatmaps[i]) and (ok_creator(beatmaps[i]) or ok_favourited(beatmaps[i])):
+            continue
+        else:
+            beatmaps.pop(i)
+    logger.error_msg("filter: After filtering: " + str(len(beatmaps)) + " maps.", None)
