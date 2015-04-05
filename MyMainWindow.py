@@ -13,7 +13,6 @@ import images
 import scraper
 import evaluator
 
-
 class MyMainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MyMainWindow, self).__init__(parent)
@@ -33,6 +32,7 @@ class MyMainWindow(QMainWindow):
 
     def set_widget(self):
         self.main_widget = QListWidget()
+        self.main_widget.setSelectionMode(QAbstractItemView.NoSelection)
         self.items = []
         self.main_widget.setMinimumSize(800, 450)
         self.setCentralWidget(self.main_widget)
