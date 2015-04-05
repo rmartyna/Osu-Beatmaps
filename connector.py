@@ -1,5 +1,7 @@
 import requests
 from init import *
+import logger
+
 
 def login(username, password):
     LOGIN_DATA['username'] = username
@@ -7,6 +9,7 @@ def login(username, password):
     SESSION.post(LOGIN_URL, data=LOGIN_DATA)
     LOGIN_DATA['username'] = None
     LOGIN_DATA['password'] = None
+
 
 def check_if_logged():
     try:
@@ -16,6 +19,13 @@ def check_if_logged():
             return True
         except (AttributeError, IndexError):
             return False
-    except requests.RequestException:
-        print('Could not log into osu.')
+    except requests.RequestException as err:
+        logger.error_msg('check_if_logged: Could not connect with Osu! site.', err)
         return False
+
+
+def reset_connection():
+    global SESSION
+    SESSION.close()
+    SESSION = requests.Session()
+    check_if_logged()
