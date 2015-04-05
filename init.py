@@ -8,7 +8,6 @@ LOGIN_DATA = {
     'login': 'Login'
 }
 
-
 FAVOURITED_TIMES_ = re.compile(r'<div><b>Favourited ([0-9]+) times?</b> in total')
 BEATMAP_ID_ = re.compile(r'a href=\'/s/([0-9]+)\'')
 STAR_DIFFICULTY_ = re.compile(r'\"difficultyrating\":\"([0-9\.]+)\"')
@@ -32,7 +31,6 @@ MIN_DIFFICULTY = 4.0
 MIN_RANKED = 1
 MIN_NON_RANKED = 5
 MIN_PP_RANK = 10000
-
 
 ERROR_LOG = open('error_log.txt', 'w')
 

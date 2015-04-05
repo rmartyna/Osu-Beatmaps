@@ -6,7 +6,6 @@ import images
 
 
 class AboutDialog(QDialog):
-
     def __init__(self, parent=None):
         super(AboutDialog, self).__init__(parent)
 
@@ -20,7 +19,7 @@ class AboutDialog(QDialog):
         <p>You can contact me at: {2}</p>
         <p>More information and source code at:<br/>
          {3}</p>""".format(VERSION, DATE,
-                                   EMAIL, GITHUB), self)
+                           EMAIL, GITHUB), self)
         self.button = QPushButton("OK")
         self.button.setMaximumWidth(100)
 

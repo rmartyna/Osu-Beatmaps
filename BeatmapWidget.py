@@ -4,7 +4,6 @@ import logger
 
 
 class BeatmapWidget(QWidget):
-
     def __init__(self, parent=None):
         super(BeatmapWidget, self).__init__(parent)
 

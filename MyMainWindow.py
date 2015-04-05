@@ -13,7 +13,6 @@ import images
 
 
 class MyMainWindow(QMainWindow):
-
     def __init__(self, parent=None):
         super(MyMainWindow, self).__init__(parent)
 
@@ -87,13 +86,12 @@ class MyMainWindow(QMainWindow):
     def add_widget(self):
         logger.error_msg("add_widget: Adding widget.", None)
         item = QListWidgetItem()
-        item.setSizeHint(QSize(100,100))
+        item.setSizeHint(QSize(100, 100))
         widget = BeatmapWidget.BeatmapWidget()
         self.items.append((item, widget))
         self.main_widget.addItem(item)
         self.main_widget.setItemWidget(item, widget)
         logger.error_msg("add_widget: Added widget.", None)
-
 
     def pop_exit_dialog(self):
         logger.error_msg("pop_exit_dialog: Started ExitDialog.", None)

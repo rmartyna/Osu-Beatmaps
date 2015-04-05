@@ -5,7 +5,6 @@ import images
 
 
 class LogoutDialog(QDialog):
-
     def __init__(self, parent=None):
         super(LogoutDialog, self).__init__(parent)
 

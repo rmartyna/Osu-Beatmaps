@@ -5,7 +5,6 @@ import images
 
 
 class OptionsDialog(QDialog):
-
     def __init__(self, parent=None):
         super(OptionsDialog, self).__init__(parent)
 

@@ -28,13 +28,13 @@ def log_data(beatmaps):
                 profile_file.write(beatmap.profile + '\n')
             except Exception as err:
                 error_msg('log_data: Could not write to profile_file.', err)
-        # TODO
-        # REMOVE COMMENTS AFTER USER PAGE SCRAPING FIXED
-        # if user_page_file is not None:
-        #    try:
-        #        user_page_file.write(beatmap.user_page + '\n')
-        #    except Exception as err:
-        #        error_msg('log_data: Could not write to user_page_file.', err)
+                # TODO
+                # REMOVE COMMENTS AFTER USER PAGE SCRAPING FIXED
+                # if user_page_file is not None:
+                # try:
+                #        user_page_file.write(beatmap.user_page + '\n')
+                #    except Exception as err:
+                #        error_msg('log_data: Could not write to user_page_file.', err)
 
     close_log_files(json_file, source_file, creator_file, profile_file, user_page_file)
     error_msg("log_data: Finished logging.", None)
@@ -72,7 +72,6 @@ def open_log_files():
 
 
 def close_log_files(json_file, source_file, creator_file, profile_file, user_page_file):
-
     error_msg("close_log_files: Closing files.", None)
     try:
         json_file.close()

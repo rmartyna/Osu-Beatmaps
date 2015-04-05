@@ -1,4 +1,3 @@
-import requests
 from init import *
 import logger
 

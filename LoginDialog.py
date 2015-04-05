@@ -6,7 +6,6 @@ import images
 
 
 class LoginDialog(QDialog):
-
     def __init__(self, parent=None):
         super(LoginDialog, self).__init__(parent)
 

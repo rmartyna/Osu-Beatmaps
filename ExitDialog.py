@@ -5,7 +5,6 @@ import images
 
 
 class ExitDialog(QDialog):
-
     def __init__(self, parent=None):
         super(ExitDialog, self).__init__(parent)
 
