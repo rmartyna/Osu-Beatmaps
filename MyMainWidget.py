@@ -1,13 +1,17 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-
+import logger
 
 class MyMainWidget(QWidget):
 
     def __init__(self, parent=None):
         super(MyMainWidget, self).__init__(parent)
 
+        logger.error_msg("__init__: Started MyMainWidget.", None)
+
         self.add_buttons()
+
+        logger.error_msg("__init__: Finished MyMainWidget.", None)
 
     def add_buttons(self):
         self.layout = QVBoxLayout()

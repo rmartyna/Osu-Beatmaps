@@ -3,6 +3,12 @@ from PyQt4.QtGui import *
 from init import *
 import connector
 import logger
+import MyMainWidget
+import LoginDialog
+import LogoutDialog
+import OptionsDialog
+import AboutDialog
+import ExitDialog
 
 
 class MyMainWindow(QMainWindow):
@@ -10,7 +16,7 @@ class MyMainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MyMainWindow, self).__init__(parent)
 
-        logger.error_msg("__init__: Making MainWindow.", None)
+        logger.error_msg("__init__: Started MyMainWindow.", None)
         self.load_settings()
         logger.error_msg("__init__: Loaded settings.", None)
         self.set_widget()
@@ -22,8 +28,10 @@ class MyMainWindow(QMainWindow):
 
         self.setWindowTitle("Osu Beatmaps!")
 
+        logger.error_msg("__init__: Finished MyMainWindow.", None)
+
     def set_widget(self):
-        self.main_widget = MyMainWidget()
+        self.main_widget = MyMainWidget.MyMainWidget()
         self.main_widget.setMinimumSize(800, 450)
         self.setCentralWidget(self.main_widget)
 
@@ -46,40 +54,56 @@ class MyMainWindow(QMainWindow):
         self.connect(self.exit_action, SIGNAL("triggered()"), self.pop_exit_dialog)
 
     def pop_login_dialog(self):
-        LoginDialog(self).exec_()
+        logger.error_msg("pop_login_dialog: Started LoginDialog.", None)
+        LoginDialog.LoginDialog(self).exec_()
+        logger.error_msg("pop_login_dialog: Finished LoginDialog.", None)
 
     def pop_logout_dialog(self):
         global PASSWORD
-        if LogoutDialog(self).exec_():
+        logger.error_msg("pop_logout_dialog: Started LogoutDialog.", None)
+        if LogoutDialog.LogoutDialog(self).exec_():
+            logger.error_msg("pop_logout_dialog: LogoutDialog accepted.", None)
             PASSWORD = None
+            logger.error_msg("pop_logout_dialog: Resetting connection.", None)
             connector.reset_connection()
+            logger.error_msg("pop_logout_dialog: Changing login/logout enabled flags.", None)
             self.logout_action.setEnabled(False)
             self.login_action.setEnabled(True)
+        logger.error_msg("pop_logout_dialog: Started LogoutDialog.", None)
 
     def pop_options_dialog(self):
-        options_dialog = OptionsDialog(self)
+        logger.error_msg("pop_options_dialog: Started OptionsDialog.", None)
+        options_dialog = OptionsDialog.OptionsDialog(self)
         if options_dialog.exec_():
-            print("accepted")
+            logger.error_msg("pop_options_dialog: OptionsDialog accepted.", None)
+        logger.error_msg("pop_options_dialog: Finished OptionsDialog.", None)
 
     def pop_about_dialog(self):
-        AboutDialog(self).exec_()
+        logger.error_msg("pop_about_dialog: Started AboutDialog.", None)
+        AboutDialog.AboutDialog(self).exec_()
+        logger.error_msg("pop_about_dialog: Finished AboutDialog.", None)
 
     def pop_exit_dialog(self):
-        ExitDialog(self).exec_()
+        logger.error_msg("pop_exit_dialog: Started ExitDialog.", None)
+        if ExitDialog.ExitDialog(self).exec_():
+            logger.error_msg("pop_exit_dialog: ExitDialog accepted.", None)
+            self.close()
+        logger.error_msg("pop_exit_dialog: Finished ExitDialog.", None)
 
     def try_login(self, username, password):
-        print(type(username))
-        print(type(password))
+        logger.error_msg("try_login: Started login.", None)
         if type(username) is not str or type(password) is not str:
-            pass
+            logger.error_msg("try_login: Username or password is not string.", None)
         else:
+            logger.error_msg("try_login: Trying to login with given username and password.", None)
             connector.login(username, password)
         if connector.check_if_logged():
+            logger.error_msg("try_login: Successfully connected.", None)
             self.login_action.setEnabled(False)
             self.logout_action.setEnabled(True)
-            print("logged")
             return True
         else:
+            logger.error_msg("try_login: Could not login.", None)
             self.login_action.setEnabled(True)
             self.logout_action.setEnabled(False)
             return False
