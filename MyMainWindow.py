@@ -3,7 +3,7 @@ from PyQt4.QtGui import *
 from init import *
 import connector
 import logger
-import MyMainWidget
+import BeatmapWidget
 import LoginDialog
 import LogoutDialog
 import OptionsDialog
@@ -31,11 +31,10 @@ class MyMainWindow(QMainWindow):
         logger.error_msg("__init__: Finished MyMainWindow.", None)
 
     def set_widget(self):
-        self.main_widget = MyMainWidget.MyMainWidget()
+        self.main_widget = QListWidget()
+        self.items = []
         self.main_widget.setMinimumSize(800, 450)
         self.setCentralWidget(self.main_widget)
-
-
 
     def add_file_menu(self):
         self.login_action = self.menuBar().addAction("Login")
@@ -49,6 +48,9 @@ class MyMainWindow(QMainWindow):
 
         self.about_action = self.menuBar().addAction("About")
         self.connect(self.about_action, SIGNAL("triggered()"), self.pop_about_dialog)
+
+        self.add_widget_action = self.menuBar().addAction("Add Widget")
+        self.connect(self.add_widget_action, SIGNAL("triggered()"), self.add_widget)
 
         self.exit_action = self.menuBar().addAction("Exit")
         self.connect(self.exit_action, SIGNAL("triggered()"), self.pop_exit_dialog)
@@ -81,6 +83,17 @@ class MyMainWindow(QMainWindow):
         logger.error_msg("pop_about_dialog: Started AboutDialog.", None)
         AboutDialog.AboutDialog(self).exec_()
         logger.error_msg("pop_about_dialog: Finished AboutDialog.", None)
+
+    def add_widget(self):
+        logger.error_msg("add_widget: Adding widget.", None)
+        item = QListWidgetItem()
+        item.setSizeHint(QSize(100,100))
+        widget = BeatmapWidget.BeatmapWidget()
+        self.items.append((item, widget))
+        self.main_widget.addItem(item)
+        self.main_widget.setItemWidget(item, widget)
+        logger.error_msg("add_widget: Added widget.", None)
+
 
     def pop_exit_dialog(self):
         logger.error_msg("pop_exit_dialog: Started ExitDialog.", None)
