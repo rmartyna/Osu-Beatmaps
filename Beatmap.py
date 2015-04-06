@@ -1,5 +1,5 @@
 from init import *
-from PyQt4.QtGui import QPicture
+from PyQt4.QtGui import QImage
 import logger
 
 class Beatmap:
@@ -43,12 +43,12 @@ class Beatmap:
         if self.picture is None:
             logger.error_msg("get_image: Picture is None. Opening picture.", None)
             try:
-                self.picture = QPicture()
+                self.picture = QImage()
                 self.picture.load(self.id_ + '.jpg')
             except Exception as err:
                 logger.error_msg("get_image: Could not load beatmap picture.", None)
                 try:
-                    self.picture = QPicture()
+                    self.picture = QImage()
                     self.picture.load("icon.png")
                 except Exception as err:
                     logger.error_msg("get_image: Could not load default beatmap picture.", None)
