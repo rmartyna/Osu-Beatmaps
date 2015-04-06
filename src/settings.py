@@ -1,10 +1,18 @@
 import pickle
 import logger
+import shutil
+import os
 from init import *
 
 
 def load_settings():
     logger.error_msg("load_settings: Started loading settings.", None)
+
+    if not (os.path.exists(SETTINGS['DOWNLOAD_FOLDER']) and os.path.isdir(SETTINGS['DOWNLOAD_FOLDER'])):
+        os.makedirs(SETTINGS['DOWNLOAD_FOLDER'])
+    if not (os.path.exists('temp') and os.path.isdir('temp')):
+        os.makedirs('temp')
+
     try:
         settings = pickle.load(open("config.dat", "rb"))
         logger.error_msg("load_settings: Found config file.", None)
@@ -33,6 +41,8 @@ def load_settings():
 
 
 def save_settings():
+    shutil.rmtree('temp')
+
     try:
         print(SETTINGS['USERNAME'])
         print(SETTINGS['PASSWORD'])

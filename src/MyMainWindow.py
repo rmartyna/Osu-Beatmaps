@@ -87,14 +87,12 @@ class MyMainWindow(QMainWindow):
         logger.error_msg("pop_about_dialog: Finished AboutDialog.", None)
 
     def add_widget(self, beatmap):
-        #logger.error_msg("add_widget: Adding widget.", None)
         item = QListWidgetItem()
         item.setSizeHint(QSize(100, 100))
         widget = BeatmapWidget.BeatmapWidget(beatmap, self)
         self.items.append((item, widget))
         self.main_widget.addItem(item)
         self.main_widget.setItemWidget(item, widget)
-        #logger.error_msg("add_widget: Added widget.", None)
 
     def download_and_show(self):
         logger.error_msg("download_and_show: Start of function.", None)

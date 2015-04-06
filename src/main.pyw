@@ -3,6 +3,7 @@ from PyQt4.QtGui import *
 import settings
 import MyMainWindow
 import init
+import os
 
 
 def main():
@@ -16,4 +17,5 @@ def main():
 
 
 if __name__ == "__main__":
+    os.chdir("..")
     main()

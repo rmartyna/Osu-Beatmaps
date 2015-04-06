@@ -4,6 +4,7 @@ from PyQt4.QtGui import QSound
 import logger
 from pydub import AudioSegment
 
+
 class Beatmap:
     def __init__(self, id_):
         self.id_ = id_
@@ -17,7 +18,6 @@ class Beatmap:
         self.name = None
         self.picture = None
         self.song = None
-
 
     def get_name(self):
         logger.error_msg("get_name: Getting name of beatmap " + self.id_ + ".", None)
@@ -47,26 +47,26 @@ class Beatmap:
             logger.error_msg("get_image: Picture is None. Opening picture.", None)
             try:
                 self.picture = QImage()
-                self.picture.load(self.id_ + '.jpg')
+                self.picture.load("temp/" + self.id_ + '.jpg')
             except Exception as err:
-                logger.error_msg("get_image: Could not load beatmap picture.", None)
+                logger.error_msg("get_image: Could not load beatmap picture.", err)
                 try:
                     self.picture = QImage()
-                    self.picture.load("icon.png")
+                    self.picture.load("resources/default.jpg")
                 except Exception as err:
-                    logger.error_msg("get_image: Could not load default beatmap picture.", None)
+                    logger.error_msg("get_image: Could not load default beatmap picture.", err)
         return self.picture
 
     def get_song(self):
-        logger.error_msg("get_song: Getting song of betamap: " + self.id_ + ".", None)
+        logger.error_msg("get_song: Getting song of beatmap: " + self.id_ + ".", None)
         if self.song is None:
             logger.error_msg("get_song: Song is None. Loading song.", None)
             try:
-                AudioSegment.from_mp3(self.id_ + '.mp3').export(self.id_ + '.wav', format='wav')
+                AudioSegment.from_mp3("temp/" + self.id_ + '.mp3').export("temp/" + self.id_ + '.wav', format='wav')
                 try:
-                    self.song = QSound(self.id_ + '.wav')
-                except:
-                    logger.error_msg("get_song: Could not find wav song.", None)
+                    self.song = QSound("temp/" + self.id_ + '.wav')
+                except Exception as err:
+                    logger.error_msg("get_song: Could not find wav song.", err)
             except Exception as err:
-                logger.error_msg("get_song: Could not load mp3 and convert to wav.", None)
+                logger.error_msg("get_song: Could not load mp3 and convert to wav.", err)
         return self.song

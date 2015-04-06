@@ -1,7 +1,7 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import logger
-import pydub
+import time
 from init import *
 
 
@@ -13,7 +13,6 @@ class BeatmapWidget(QWidget):
 
         self.beatmap = beatmap
         self.add_widgets()
-
 
         logger.error_msg("__init__: Finished BeatmapWidget.", None)
 
@@ -36,10 +35,27 @@ class BeatmapWidget(QWidget):
         if CURRENTLY_PLAYING['p'] is not None:
             logger.error_msg("image_clicked: Stopping last song.", None)
             CURRENTLY_PLAYING['p'].stop()
-        if CURRENTLY_PLAYING['id'] != self.beatmap.id_:
+        if CURRENTLY_PLAYING['id'] is None:
             logger.error_msg("image_clicked: Playing new song.", None)
-            CURRENTLY_PLAYING['p'] = self.beatmap.get_song().play()
+            self.play_song()
+        else:
+            if CURRENTLY_PLAYING['id'] != self.beatmap.id_:
+                self.play_song()
+            else:
+                if time.time() - CURRENTLY_PLAYING['t'] < 10:
+                    CURRENTLY_PLAYING['id'] = None
+                else:
+                    self.play_song()
+
+
+    def play_song(self):
+        CURRENTLY_PLAYING['p'] = self.beatmap.get_song()
+        if CURRENTLY_PLAYING['p'] is not None:
+            CURRENTLY_PLAYING['p'].play()
             CURRENTLY_PLAYING['id'] = self.beatmap.id_
+            CURRENTLY_PLAYING['t'] = time.time()
+        else:
+            logger.error_msg("play_song: Could not load song of beatmap " + self.beatmap.id_ + ".", None)
 
 
 class ImageLabel(QLabel):

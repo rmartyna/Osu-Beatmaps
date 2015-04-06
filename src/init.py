@@ -1,6 +1,6 @@
 import re
 import requests
-from PyQt4.QtGui import QIcon
+
 
 LOGIN_DATA = {
     'username': None,
@@ -51,4 +51,5 @@ LOGIN_URL = 'https://osu.ppy.sh/forum/ucp.php?mode=login'
 MAIN_PAGE_URL = 'https://osu.ppy.sh'
 
 CURRENTLY_PLAYING = {'p': None,
-                     'id': None}
+                     'id': None,
+                     't': None}

@@ -1,7 +1,4 @@
 from __future__ import print_function
-import threading
-import time
-import urllib2
 import logger
 from init import *
 import Beatmap
@@ -54,6 +51,7 @@ def scrape_beatmaps_source(beatmaps):
         scrape_source(beatmap, to_remove, index)
 
     remove_beatmaps(beatmaps, to_remove)
+
 
 def scrape_source(beatmap, to_remove, index):
     try:
@@ -134,21 +132,22 @@ def scrape_beatmaps_images(beatmaps):
             image_url = IMAGE_URL_.search(beatmap.source).group(1)
             try:
                 image = SESSION.get('https:' + image_url)
-                try:
-                    f = open(beatmap.id_ + '.jpg', 'wb')
+                if len(image.content) > 0:
                     try:
-                        f.write(image.content)
+                        f = open("temp/" + beatmap.id_ + '.jpg', 'wb')
                         try:
-                            f.close()
+                            f.write(image.content)
+                            try:
+                                f.close()
+                            except Exception as err:
+                                logger.error_msg('scrape_beatmaps_images: Could not close file of beatmap '
+                                                 + beatmap.id_ + '.', err)
                         except Exception as err:
-                            logger.error_msg('scrape_beatmaps_images: Could not close file of beatamap '
-                                             + beatmap.id_ + '.', err)
+                            logger.error_msg('scrape_beatmaps_images: Could not write image of beatmap '
+                                             + beatmap.id_ + ' to file.', err)
                     except Exception as err:
-                        logger.error_msg('scrape_beatmaps_images: Could not write image of beatmap '
-                                         + beatmap.id_ + ' to file.', err)
-                except Exception as err:
-                    logger.error_msg('scrape_beatmaps_images: Could not open file for imgage of beatmap '
-                                     + beatmap.id_ + '.', err)
+                        logger.error_msg('scrape_beatmaps_images: Could not open file for image of beatmap '
+                                         + beatmap.id_ + '.', err)
             except requests.ConnectionError as err:
                 logger.error_msg('scrape_beatmaps_images: Could not download image ' + image_url + '.', err)
         except (AttributeError, IndexError) as err:
@@ -160,7 +159,7 @@ def scrape_beatmaps_songs(beatmaps):
         try:
             response = SESSION.get('http://b.ppy.sh/preview/' + beatmap.id_ + '.mp3')
             try:
-                f = open(beatmap.id_ + '.mp3', 'wb')
+                f = open('temp/' + beatmap.id_ + '.mp3', 'wb')
                 try:
                     f.write(response.content)
                     try:
