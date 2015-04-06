@@ -4,6 +4,7 @@ import logger
 import time
 import downloader
 from init import *
+import threading
 
 
 class BeatmapWidget(QWidget):
@@ -28,7 +29,7 @@ class BeatmapWidget(QWidget):
         self.layout.addWidget(self.download_button, 0, 8, 1, 2)
 
         self.connect(self.imageLabel, SIGNAL("clicked()"), self.image_clicked)
-        self.connect(self.download_button, SIGNAL("clicked()"), self.download_beatmap)
+        self.connect(self.download_button, SIGNAL("clicked()"), self.download_beatmap_wraper)
 
         self.setLayout(self.layout)
 
@@ -54,6 +55,10 @@ class BeatmapWidget(QWidget):
             CURRENTLY_PLAYING['t'] = time.time()
         else:
             logger.error_msg("play_song: Could not load song of beatmap " + self.beatmap.id_ + ".", None)
+
+    def download_beatmap_wraper(self):
+        thread = threading.Thread(target=BeatmapWidget.download_beatmap, args=(self,))
+        thread.start()
 
     def download_beatmap(self):
         downloader.download_beatmap(self.beatmap)

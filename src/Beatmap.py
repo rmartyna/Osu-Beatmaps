@@ -55,9 +55,7 @@ class Beatmap:
         return self.picture
 
     def get_song(self):
-        logger.error_msg("get_song: Getting song of beatmap: " + self.id_ + ".", None)
         if self.song is None:
-            logger.error_msg("get_song: Song is None. Loading song.", None)
             try:
                 AudioSegment.from_mp3("temp/" + self.id_ + '.mp3').export("temp/" + self.id_ + '.wav', format='wav')
                 try:
