@@ -1,6 +1,8 @@
 from init import *
 from PyQt4.QtGui import QImage
+from PyQt4.QtGui import QSound
 import logger
+from pydub import AudioSegment
 
 class Beatmap:
     def __init__(self, id_):
@@ -14,6 +16,7 @@ class Beatmap:
         self.title = None
         self.name = None
         self.picture = None
+        self.song = None
 
 
     def get_name(self):
@@ -53,3 +56,17 @@ class Beatmap:
                 except Exception as err:
                     logger.error_msg("get_image: Could not load default beatmap picture.", None)
         return self.picture
+
+    def get_song(self):
+        logger.error_msg("get_song: Getting song of betamap: " + self.id_ + ".", None)
+        if self.song is None:
+            logger.error_msg("get_song: Song is None. Loading song.", None)
+            try:
+                AudioSegment.from_mp3(self.id_ + '.mp3').export(self.id_ + '.wav', format='wav')
+                try:
+                    self.song = QSound(self.id_ + '.wav')
+                except:
+                    logger.error_msg("get_song: Could not find wav song.", None)
+            except Exception as err:
+                logger.error_msg("get_song: Could not load mp3 and convert to wav.", None)
+        return self.song

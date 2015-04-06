@@ -1,4 +1,7 @@
 from __future__ import print_function
+import threading
+import time
+import urllib2
 import logger
 from init import *
 import Beatmap
@@ -26,6 +29,8 @@ def scrape_data(beatmaps, page):
     logger.error_msg("scrape_data: Finished scraping user_page", None)
     scrape_beatmaps_images(beatmaps)
     logger.error_msg("scrape_data: Finished scraping images.", None)
+    scrape_beatmaps_songs(beatmaps)
+    logger.error_msg("scrape_data: Finished scraping songs.", None)
     logger.error_msg("scrape_data: Finished scraping.", None)
 
 
@@ -46,15 +51,20 @@ def scrape_beatmaps_id(beatmaps, page):
 def scrape_beatmaps_source(beatmaps):
     to_remove = []
     for index, beatmap in enumerate(beatmaps):
-        try:
-            response = SESSION.get('https://osu.ppy.sh/s/'
-                                   + beatmap.id_)
-            beatmap.source = response.content
-        except requests.RequestException as err:
-            logger.error_msg('scrape_beatmaps_source: Error getting source page on beatmap '
-                             + str(beatmap.id_) + '.', err)
-            to_remove.append(index)
+        scrape_source(beatmap, to_remove, index)
+
     remove_beatmaps(beatmaps, to_remove)
+
+def scrape_source(beatmap, to_remove, index):
+    try:
+        response = SESSION.get('https://osu.ppy.sh/s/'
+                               + beatmap.id_)
+        beatmap.source = response.content
+    except Exception as err:
+        logger.error_msg('scrape_beatmaps_source: Error getting source page on beatmap '
+                         + str(beatmap.id_) + '.', err)
+        print(str(err))
+        to_remove.append(index)
 
 
 def scrape_beatmaps_json(beatmaps):
@@ -131,7 +141,7 @@ def scrape_beatmaps_images(beatmaps):
                         try:
                             f.close()
                         except Exception as err:
-                            logger.error_msg('scrape_beatmaps_images: Could not close file of betamap '
+                            logger.error_msg('scrape_beatmaps_images: Could not close file of beatamap '
                                              + beatmap.id_ + '.', err)
                     except Exception as err:
                         logger.error_msg('scrape_beatmaps_images: Could not write image of beatmap '
@@ -143,6 +153,30 @@ def scrape_beatmaps_images(beatmaps):
                 logger.error_msg('scrape_beatmaps_images: Could not download image ' + image_url + '.', err)
         except (AttributeError, IndexError) as err:
             logger.error_msg('scrape_beatmaps_images: Could not find image url of beatmap ' + beatmap.id_ + '.', err)
+
+
+def scrape_beatmaps_songs(beatmaps):
+    for index, beatmap in enumerate(beatmaps):
+        try:
+            response = SESSION.get('http://b.ppy.sh/preview/' + beatmap.id_ + '.mp3')
+            try:
+                f = open(beatmap.id_ + '.mp3', 'wb')
+                try:
+                    f.write(response.content)
+                    try:
+                        f.close()
+                    except Exception as err:
+                        logger.error_msg("scrape_beatmaps_songs: Could not close file of beatmap "
+                                         + beatmap.id_ + '.', err)
+                except Exception as err:
+                    logger.error_msg('scrape_beatmaps_songs: Could not write song of beatmap '
+                                     + beatmap.id_ + ' to file.', err)
+            except Exception as err:
+                logger.error_msg('scrape_beatmaps_songs: Could not open file for song of beatmap '
+                                 + beatmap.id_ + '.', err)
+        except Exception as err:
+            logger.error_msg('scrape_beatmaps_songs: Could not download song of beatmap '
+                             + beatmap.id_ + '.', err)
 
 
 def remove_beatmaps(beatmaps, to_remove):

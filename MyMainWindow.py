@@ -35,6 +35,7 @@ class MyMainWindow(QMainWindow):
         self.main_widget.setSelectionMode(QAbstractItemView.NoSelection)
         self.items = []
         self.main_widget.setMinimumSize(800, 450)
+        self.main_widget.setMaximumWidth(800)
         self.setCentralWidget(self.main_widget)
 
     def add_file_menu(self):
