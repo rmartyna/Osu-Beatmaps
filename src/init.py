@@ -49,6 +49,12 @@ SESSION = requests.Session()
 
 LOGIN_URL = 'https://osu.ppy.sh/forum/ucp.php?mode=login'
 MAIN_PAGE_URL = 'https://osu.ppy.sh'
+ALL_MAPS_URL = 'https://osu.ppy.sh/p/beatmaplist?l=1&r=4&q=&g=0&la=0&s=4&o=1&m=-1&page='
+MAP_PAGE_URL = 'https://osu.ppy.sh/s/'
+MAP_JSON_URL = 'https://osu.ppy.sh/api/get_beatmaps?k=c5878839513d6eb99dbf09f8244653332b93eb3c&s='
+MAP_CREATOR_URL = 'https://osu.ppy.sh/api/get_user?k=c5878839513d6eb99dbf09f8244653332b93eb3c&u='
+MAP_PROFILE_URL_START = 'https://osu.ppy.sh/pages/include/profile-beatmaps.php?u='
+MAP_PROFILE_URL_END = '&m=0'
 
 CURRENTLY_PLAYING = {'p': None,
                      'id': None,

@@ -13,6 +13,7 @@ import images
 import scraper
 import evaluator
 
+
 class MyMainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MyMainWindow, self).__init__(parent)
