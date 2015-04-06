@@ -97,10 +97,14 @@ class MyMainWindow(QMainWindow):
     def add_widget(self, beatmap):
         item = QListWidgetItem()
         item.setSizeHint(QSize(100, 100))
-        widget = BeatmapWidget.BeatmapWidget(beatmap, self)
+        widget = BeatmapWidget.BeatmapWidget(beatmap, item, self)
         self.items.append((item, widget))
         self.main_widget.addItem(item)
         self.main_widget.setItemWidget(item, widget)
+
+    def delete_widget(self, widget):
+        self.main_widget.removeItemWidget(widget)
+
 
     def download_and_show(self):
         logger.error_msg("download_and_show: Start of function.", None)

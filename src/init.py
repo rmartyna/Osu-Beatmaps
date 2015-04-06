@@ -1,5 +1,6 @@
 import re
 import requests
+import pickle
 
 
 LOGIN_DATA = {
@@ -33,7 +34,7 @@ MIN_RANKED = 1
 MIN_NON_RANKED = 5
 MIN_PP_RANK = 5000
 
-ERROR_LOG = open('error_log.txt', 'w')
+ERROR_LOG = open('../error_log.txt', 'w')
 
 VERSION = "0.1"
 DATE = "4th April 2015"
@@ -63,3 +64,9 @@ MAP_SONG_URL_END = '.mp3'
 CURRENTLY_PLAYING = {'p': None,
                      'id': None,
                      't': None}
+
+
+try:
+    DATABASE = pickle.load(open("../database.dat", "rb"))
+except IOError:
+    DATABASE = set()

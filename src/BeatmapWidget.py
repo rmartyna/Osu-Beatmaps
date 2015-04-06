@@ -2,15 +2,18 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import logger
 import time
+import downloader
 from init import *
 
 
 class BeatmapWidget(QWidget):
-    def __init__(self, beatmap, parent=None):
+    def __init__(self, beatmap, item, parent=None):
         super(BeatmapWidget, self).__init__(parent)
 
         logger.error_msg("__init__: Started BeatmapWidget.", None)
 
+        self.container = parent
+        self.item = item
         self.beatmap = beatmap
         self.add_widgets()
 
@@ -23,10 +26,13 @@ class BeatmapWidget(QWidget):
         self.imageLabel.setPixmap(QPixmap.fromImage(self.beatmap.get_picture()))
         self.imageLabel.setMinimumSize(160, 120)
         self.nameLabel = QLabel(self.beatmap.get_name())
+        self.download_button = QPushButton("Download")
         self.layout.addWidget(self.imageLabel, 0, 0, 1, 2)
-        self.layout.addWidget(self.nameLabel, 0, 2, 1, 8)
+        self.layout.addWidget(self.nameLabel, 0, 2, 1, 6)
+        self.layout.addWidget(self.download_button, 0, 8, 1, 2)
 
         self.connect(self.imageLabel, SIGNAL("clicked()"), self.image_clicked)
+        self.connect(self.download_button, SIGNAL("clicked()"), self.download_beatmap)
 
         self.setLayout(self.layout)
 
@@ -47,7 +53,6 @@ class BeatmapWidget(QWidget):
                 else:
                     self.play_song()
 
-
     def play_song(self):
         CURRENTLY_PLAYING['p'] = self.beatmap.get_song()
         if CURRENTLY_PLAYING['p'] is not None:
@@ -56,6 +61,10 @@ class BeatmapWidget(QWidget):
             CURRENTLY_PLAYING['t'] = time.time()
         else:
             logger.error_msg("play_song: Could not load song of beatmap " + self.beatmap.id_ + ".", None)
+
+    def download_beatmap(self):
+        downloader.download_beatmap(self.beatmap)
+        self.container.delete_widget(self.item)
 
 
 class ImageLabel(QLabel):

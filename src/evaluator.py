@@ -97,7 +97,7 @@ def filter(beatmaps):
     logger.error_msg("filter: Filtering maps.", None)
     logger.error_msg("filter: Before filtering: " + str(len(beatmaps)) + " maps.", None)
     for i in range(len(beatmaps) - 1, -1, -1):
-        if ok_difficulty(beatmaps[i]) and (ok_creator(beatmaps[i]) or ok_favourited(beatmaps[i])):
+        if beatmaps[i].id_ not in DATABASE and ok_difficulty(beatmaps[i]) and (ok_creator(beatmaps[i]) or ok_favourited(beatmaps[i])):
             continue
         else:
             beatmaps.pop(i)

@@ -6,11 +6,6 @@ import evaluator
 
 
 def download_good_maps(beatmaps):
-    try:
-        database = pickle.load(open("database.dat", "rb"))
-    except IOError:
-        database = set()
-
     if not (os.path.exists(SETTINGS['DOWNLOAD_FOLDER']) and os.path.isdir(SETTINGS['DOWNLOAD_FOLDER'])):
         try:
             os.makedirs(SETTINGS['DOWNLOAD_FOLDER'])
@@ -19,12 +14,11 @@ def download_good_maps(beatmaps):
             return
     try:
         for index, beatmap in enumerate(beatmaps):
-            print('download_good_maps ' + str(index + 1) + '/' + str(len(beatmaps)))
-            if beatmap.id_ not in database:
+            if beatmap.id_ not in DATABASE:
                 if evaluator.ok_difficulty(beatmap) and (evaluator.ok_creator(beatmap)
                                                          or evaluator.ok_favourited(beatmap)):
                     try:
-                        database.add(beatmap.id_)
+                        DATABASE.add(beatmap.id_)
                         try:
                             download_beatmap(beatmap)
                         except Exception as err:
@@ -35,7 +29,7 @@ def download_good_maps(beatmaps):
                         continue
     finally:
         try:
-            pickle.dump(database, open("database.dat", "wb"))
+            pickle.dump(DATABASE, open("database.dat", "wb"))
         except Exception as err:
             logger.error_msg('download_good_maps: Could not dump database.', err)
 
@@ -43,7 +37,7 @@ def download_good_maps(beatmaps):
 def download_beatmap(beatmap):
     try:
         absolute_path = os.path.join(os.path.join(SETTINGS['DOWNLOAD_FOLDER'],
-                                                  beatmap.get.name() + '.osz'))
+                                                  beatmap.get_name() + '.osz'))
     except Exception as err:
         logger.error_msg('download_beatmap: Could not make absolute path.', err)
         return
@@ -54,6 +48,11 @@ def download_beatmap(beatmap):
             beatmap_data = SESSION.get('https://osu.ppy.sh/d/' + beatmap.id_)
             try:
                 beatmap_file.write(beatmap_data.content)
+                try:
+                    DATABASE.add(beatmap.id_)
+                    pickle.dump(DATABASE, open("database.dat", "wb"))
+                except Exception as err:
+                    logger.error_msg('download_good_maps: Could not dump database.', err)
             except Exception as err:
                 logger.error_msg('download_beatmap: Could not write beatmap ' + beatmap.id_ + ' into file.', err)
         except requests.RequestException as err:
