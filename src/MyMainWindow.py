@@ -150,8 +150,6 @@ class PageAction(QWidgetAction):
     def __init__(self, parent=None):
         super(PageAction, self).__init__(parent)
 
-        print("Init PageAction")
-
         self.widget = QWidget()
         self.layout = QGridLayout()
         self.layout.addWidget(QLabel("Page: "), 0, 0, 1, 2)

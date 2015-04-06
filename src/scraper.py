@@ -38,8 +38,8 @@ def scrape_beatmaps_id(beatmaps, page):
         response = SESSION.get(ALL_MAPS_URL + str(page))
         try:
             result = BEATMAP_ID_.findall(response.content)
-            for beatmap_id in result:
-                beatmaps.append(Beatmap.Beatmap(beatmap_id, response.content))
+            for index, beatmap_id in enumerate(result):
+                beatmaps.append(Beatmap.Beatmap(beatmap_id, response.content, index))
         except Exception as err:
             logger.error_msg('scrape_beatmaps_id: Error finding ids on page.', err)
     except requests.RequestException as err:
