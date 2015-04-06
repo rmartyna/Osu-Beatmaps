@@ -24,12 +24,15 @@ class BeatmapWidget(QWidget):
         self.imageLabel.setMinimumSize(160, 120)
         self.nameLabel = QLabel(self.beatmap.get_name())
         self.download_button = QPushButton("Download")
-        self.layout.addWidget(self.imageLabel, 0, 0, 1, 2)
-        self.layout.addWidget(self.nameLabel, 0, 2, 1, 6)
+        self.remove_button = QPushButton("Remove")
+        self.layout.addWidget(self.imageLabel, 0, 0, 2, 2)
+        self.layout.addWidget(self.nameLabel, 0, 2, 2, 6)
         self.layout.addWidget(self.download_button, 0, 8, 1, 2)
+        self.layout.addWidget(self.remove_button, 1, 8, 1, 2)
 
         self.connect(self.imageLabel, SIGNAL("clicked()"), self.image_clicked)
         self.connect(self.download_button, SIGNAL("clicked()"), self.download_beatmap_wraper)
+        self.connect(self.remove_button, SIGNAL("clicked()"), self.remove_beatmap)
 
         self.setLayout(self.layout)
 
@@ -62,6 +65,15 @@ class BeatmapWidget(QWidget):
 
     def download_beatmap(self):
         downloader.download_beatmap(self.beatmap)
+        self.container.delete_widget(self.item)
+
+    def remove_beatmap(self):
+        try:
+            DATABASE.add(self.beatmap.id_)
+            pickle.dump(DATABASE, open("database.dat", "wb"))
+            logger.error_msg("remove_beatmap: Removed beatmap: " + self.beatmap.id_ + ".", None)
+        except Exception as err:
+            logger.error_msg('remove_beatmap: Could not dump database.', err)
         self.container.delete_widget(self.item)
 
 
