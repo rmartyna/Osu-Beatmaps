@@ -25,23 +25,14 @@ def scrape_data(beatmaps, page):
     logger.error_msg("scrape_data: Finished scraping profile.", None)
     scrape_beatmaps_user_page(beatmaps)
     logger.error_msg("scrape_data: Finished scraping user_page", None)
-    scrape_beatmaps_images(beatmaps)
-    logger.error_msg("scrape_data: Finished scraping images.", None)
-    scrape_beatmaps_songs(beatmaps)
-    logger.error_msg("scrape_data: Finished scraping songs.", None)
     logger.error_msg("scrape_data: Finished scraping.", None)
 
 
-def scrape_mutltiple_pages(beatmaps, target):
-    to_remove = []
-    threads = []
-    for index, beatmap in enumerate(beatmaps):
-        thread = threading.Thread(target=target, args=(beatmap,to_remove,index))
-        threads.append(thread)
-        thread.start()
-    for thread in threads:
-        thread.join()
-    remove_beatmaps(beatmaps, to_remove)
+def scrape_data_after_filtering(beatmaps):
+    scrape_beatmaps_images(beatmaps)
+    logger.error_msg("scrape_data_after_filtering: Finished scraping images.", None)
+    scrape_beatmaps_songs(beatmaps)
+    logger.error_msg("scrape_data_after_filtering: Finished scarping songs.", None)
 
 
 def scrape_beatmaps_id(beatmaps, page):
@@ -129,6 +120,7 @@ def scrape_profile(beatmap, to_remove, index):
                          + beatmap.id_ + '.', err)
         to_remove.append(index)
 
+
 # TODO
 # ADD METHOD TO SCRAPE KUDOSU FOR USER PAGE
 # NEED TO FAKE JAVASCRIPT
@@ -137,55 +129,58 @@ def scrape_beatmaps_user_page(beatmaps):
 
 
 def scrape_beatmaps_images(beatmaps):
-    for index, beatmap in enumerate(beatmaps):
-        try:
-            image_url = IMAGE_URL_.search(beatmap.source).group(1)
-            try:
-                image = SESSION.get('https:' + image_url)
-                if len(image.content) > 0:
-                    try:
-                        f = open("temp/" + beatmap.id_ + '.jpg', 'wb')
-                        try:
-                            f.write(image.content)
-                            try:
-                                f.close()
-                            except Exception as err:
-                                logger.error_msg('scrape_beatmaps_images: Could not close file of beatmap '
-                                                 + beatmap.id_ + '.', err)
-                        except Exception as err:
-                            logger.error_msg('scrape_beatmaps_images: Could not write image of beatmap '
-                                             + beatmap.id_ + ' to file.', err)
-                    except Exception as err:
-                        logger.error_msg('scrape_beatmaps_images: Could not open file for image of beatmap '
-                                         + beatmap.id_ + '.', err)
-            except requests.ConnectionError as err:
-                logger.error_msg('scrape_beatmaps_images: Could not download image ' + image_url + '.', err)
-        except (AttributeError, IndexError) as err:
-            logger.error_msg('scrape_beatmaps_images: Could not find image url of beatmap ' + beatmap.id_ + '.', err)
+    scrape_mutliple_pages_without_deleting(beatmaps, scrape_image)
 
 
-def scrape_beatmaps_songs(beatmaps):
-    for index, beatmap in enumerate(beatmaps):
-        try:
-            response = SESSION.get('http://b.ppy.sh/preview/' + beatmap.id_ + '.mp3')
+def scrape_image(beatmap):
+    try:
+        image = SESSION.get(MAP_IMAGE_URL_START + beatmap.id_ + MAP_IMAGE_URL_END)
+        if len(image.content) > 0:
             try:
-                f = open('temp/' + beatmap.id_ + '.mp3', 'wb')
+                f = open("temp/" + beatmap.id_ + '.jpg', 'wb')
                 try:
-                    f.write(response.content)
+                    f.write(image.content)
                     try:
                         f.close()
                     except Exception as err:
-                        logger.error_msg("scrape_beatmaps_songs: Could not close file of beatmap "
+                        logger.error_msg('scrape_beatmaps_images: Could not close file of beatmap '
                                          + beatmap.id_ + '.', err)
                 except Exception as err:
-                    logger.error_msg('scrape_beatmaps_songs: Could not write song of beatmap '
+                    logger.error_msg('scrape_beatmaps_images: Could not write image of beatmap '
                                      + beatmap.id_ + ' to file.', err)
             except Exception as err:
-                logger.error_msg('scrape_beatmaps_songs: Could not open file for song of beatmap '
+                logger.error_msg('scrape_beatmaps_images: Could not open file for image of beatmap '
                                  + beatmap.id_ + '.', err)
+    except requests.ConnectionError as err:
+        logger.error_msg('scrape_beatmaps_images: Could not download image of beatmap '
+                         + beatmap.id_ + '.', err)
+
+
+def scrape_beatmaps_songs(beatmaps):
+    scrape_mutliple_pages_without_deleting(beatmaps, scrape_song)
+
+
+def scrape_song(beatmap):
+    try:
+        response = SESSION.get(MAP_SONG_URL_START + beatmap.id_ + MAP_SONG_URL_END)
+        try:
+            f = open('temp/' + beatmap.id_ + '.mp3', 'wb')
+            try:
+                f.write(response.content)
+                try:
+                    f.close()
+                except Exception as err:
+                    logger.error_msg("scrape_beatmaps_songs: Could not close file of beatmap "
+                                     + beatmap.id_ + '.', err)
+            except Exception as err:
+                logger.error_msg('scrape_beatmaps_songs: Could not write song of beatmap '
+                                 + beatmap.id_ + ' to file.', err)
         except Exception as err:
-            logger.error_msg('scrape_beatmaps_songs: Could not download song of beatmap '
+            logger.error_msg('scrape_beatmaps_songs: Could not open file for song of beatmap '
                              + beatmap.id_ + '.', err)
+    except Exception as err:
+        logger.error_msg('scrape_beatmaps_songs: Could not download song of beatmap '
+                         + beatmap.id_ + '.', err)
 
 
 def remove_beatmaps(beatmaps, to_remove):
@@ -194,3 +189,25 @@ def remove_beatmaps(beatmaps, to_remove):
             beatmaps.pop(index)
         except Exception as err:
             logger.error_msg('remove_beatmaps: Error while popping from beatmaps list.', err)
+
+
+def scrape_mutltiple_pages(beatmaps, target):
+    to_remove = []
+    threads = []
+    for index, beatmap in enumerate(beatmaps):
+        thread = threading.Thread(target=target, args=(beatmap, to_remove, index))
+        threads.append(thread)
+        thread.start()
+    for thread in threads:
+        thread.join()
+    remove_beatmaps(beatmaps, to_remove)
+
+
+def scrape_mutliple_pages_without_deleting(beatmaps, target):
+    threads = []
+    for beatmap in beatmaps:
+        thread = threading.Thread(target=target, args=(beatmap,))
+        threads.append(thread)
+        thread.start()
+    for thread in threads:
+        thread.join()

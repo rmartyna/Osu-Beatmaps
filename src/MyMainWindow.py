@@ -102,6 +102,8 @@ class MyMainWindow(QMainWindow):
         logger.error_msg("download_and_show: Finished scraping.", None)
         evaluator.filter(beatmaps)
         logger.error_msg("download_and_show: Finished evaluating.", None)
+        scraper.scrape_data_after_filtering(beatmaps)
+        logger.error_msg("download_and_show: Finished scraping after filtering.", None)
         for beatmap in beatmaps:
             self.add_widget(beatmap)
         logger.error_msg("download_and_show: Finished making widgets.", None)

@@ -55,6 +55,10 @@ MAP_JSON_URL = 'https://osu.ppy.sh/api/get_beatmaps?k=c5878839513d6eb99dbf09f824
 MAP_CREATOR_URL = 'https://osu.ppy.sh/api/get_user?k=c5878839513d6eb99dbf09f8244653332b93eb3c&u='
 MAP_PROFILE_URL_START = 'https://osu.ppy.sh/pages/include/profile-beatmaps.php?u='
 MAP_PROFILE_URL_END = '&m=0'
+MAP_IMAGE_URL_START = 'https://b.ppy.sh/thumb/'
+MAP_IMAGE_URL_END = 'l.jpg'
+MAP_SONG_URL_START = 'http://b.ppy.sh/preview/'
+MAP_SONG_URL_END = '.mp3'
 
 CURRENTLY_PLAYING = {'p': None,
                      'id': None,
