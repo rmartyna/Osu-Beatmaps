@@ -6,9 +6,9 @@ from pydub import AudioSegment
 
 
 class Beatmap:
-    def __init__(self, id_):
+    def __init__(self, id_, all_maps):
         self.id_ = id_
-        self.source = None
+        self.all_maps = all_maps
         self.json = None
         self.creator = None
         self.profile = None

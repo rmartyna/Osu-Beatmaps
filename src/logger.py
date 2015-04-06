@@ -5,7 +5,7 @@ from init import *
 
 def log_data(beatmaps):
     error_msg("log_data: Started logging.", None)
-    json_file, source_file, creator_file, profile_file, user_page_file = open_log_files()
+    json_file, creator_file, profile_file, user_page_file = open_log_files()
 
     for beatmap in beatmaps:
         if json_file is not None:
@@ -13,11 +13,6 @@ def log_data(beatmaps):
                 json_file.write(beatmap.json + '\n')
             except Exception as err:
                 error_msg('log_data: Could not write to json_file.', err)
-        if source_file is not None:
-            try:
-                source_file.write(beatmap.source + '\n')
-            except Exception as err:
-                error_msg('log_data: Could not write to source_file.', err)
         if creator_file is not None:
             try:
                 creator_file.write(beatmap.creator + '\n')
@@ -36,7 +31,7 @@ def log_data(beatmaps):
                 #    except Exception as err:
                 #        error_msg('log_data: Could not write to user_page_file.', err)
 
-    close_log_files(json_file, source_file, creator_file, profile_file, user_page_file)
+    close_log_files(json_file, creator_file, profile_file, user_page_file)
     error_msg("log_data: Finished logging.", None)
 
 
@@ -47,11 +42,6 @@ def open_log_files():
     except Exception as err:
         error_msg('open_log_files: Could not open json_file.', err)
         json_file = None
-    try:
-        source_file = open('source.txt', 'w')
-    except Exception as err:
-        error_msg('open_log_files: Could not open source_file.', err)
-        source_file = None
     try:
         creator_file = open('creator.txt', 'w')
     except Exception as err:
@@ -68,19 +58,15 @@ def open_log_files():
         error_msg('open_log_files: Could not open user_page file.', err)
         user_page_file = None
 
-    return json_file, source_file, creator_file, profile_file, user_page_file
+    return json_file, creator_file, profile_file, user_page_file
 
 
-def close_log_files(json_file, source_file, creator_file, profile_file, user_page_file):
+def close_log_files(json_file, creator_file, profile_file, user_page_file):
     error_msg("close_log_files: Closing files.", None)
     try:
         json_file.close()
     except Exception as err:
         error_msg('close_log_files: Could not close json_file.', err)
-    try:
-        source_file.close()
-    except Exception as err:
-        error_msg('close_log_files: Could not close source_file.', err)
     try:
         creator_file.close()
     except Exception as err:

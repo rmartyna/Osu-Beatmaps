@@ -15,8 +15,6 @@ def scrape_data(beatmaps, page):
     logger.error_msg("scrape_data: Start scraping.", None)
     scrape_beatmaps_id(beatmaps, page)
     logger.error_msg("scrape_data: Finished scraping ids.", None)
-    scrape_beatmaps_source(beatmaps)
-    logger.error_msg("scrape_data: Finished scraping source.", None)
     scrape_beatmaps_json(beatmaps)
     logger.error_msg("scrape_data: Finished scraping json.", None)
     scrape_beatmaps_creator(beatmaps)
@@ -41,30 +39,11 @@ def scrape_beatmaps_id(beatmaps, page):
         try:
             result = BEATMAP_ID_.findall(response.content)
             for beatmap_id in result:
-                beatmaps.append(Beatmap.Beatmap(beatmap_id))
+                beatmaps.append(Beatmap.Beatmap(beatmap_id, response.content))
         except Exception as err:
             logger.error_msg('scrape_beatmaps_id: Error finding ids on page.', err)
     except requests.RequestException as err:
         logger.error_msg('scrape_beatmaps_id: Error getting page ' + str(page) + '.', err)
-
-
-def scrape_beatmaps_source(beatmaps):
-    to_remove = []
-    for index, beatmap in enumerate(beatmaps):
-        scrape_source(beatmap, to_remove, index)
-
-    remove_beatmaps(beatmaps, to_remove)
-
-
-def scrape_source(beatmap, to_remove, index):
-    try:
-        response = SESSION.get(MAP_PAGE_URL + beatmap.id_)
-        beatmap.source = response.content
-    except Exception as err:
-        logger.error_msg('scrape_beatmaps_source: Error getting source page on beatmap '
-                         + str(beatmap.id_) + '.', err)
-        print(str(err))
-        to_remove.append(index)
 
 
 def scrape_beatmaps_json(beatmaps):

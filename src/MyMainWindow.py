@@ -52,11 +52,18 @@ class MyMainWindow(QMainWindow):
         self.about_action = self.menuBar().addAction("About")
         self.connect(self.about_action, SIGNAL("triggered()"), self.pop_about_dialog)
 
-        self.download_and_show_action = self.menuBar().addAction("Download and Show")
+        self.download_menu = self.menuBar().addMenu("Download")
+
+        self.download_and_show_action = self.download_menu.addAction("Download and Show")
         self.connect(self.download_and_show_action, SIGNAL("triggered()"), self.download_and_show)
+        self.page_action = PageAction(self)
+        self.download_menu.addAction(self.page_action)
+
 
         self.exit_action = self.menuBar().addAction("Exit")
         self.connect(self.exit_action, SIGNAL("triggered()"), self.pop_exit_dialog)
+
+
 
     def pop_login_dialog(self):
         logger.error_msg("pop_login_dialog: Started LoginDialog.", None)
@@ -98,7 +105,12 @@ class MyMainWindow(QMainWindow):
     def download_and_show(self):
         logger.error_msg("download_and_show: Start of function.", None)
         beatmaps = []
-        scraper.scrape_data(beatmaps, 1)
+        try:
+            page = int(self.page_action.page())
+        except Exception as err:
+            logger.error_msg("download_and_show: Enter valid value for page.", err)
+        self.main_widget.clear()
+        scraper.scrape_data(beatmaps, page)
         logger.error_msg("download_and_show: Finished scraping.", None)
         evaluator.filter(beatmaps)
         logger.error_msg("download_and_show: Finished evaluating.", None)
@@ -132,3 +144,22 @@ class MyMainWindow(QMainWindow):
             self.login_action.setEnabled(True)
             self.logout_action.setEnabled(False)
             return False
+
+
+class PageAction(QWidgetAction):
+    def __init__(self, parent=None):
+        super(PageAction, self).__init__(parent)
+
+        print("Init PageAction")
+
+        self.widget = QWidget()
+        self.layout = QGridLayout()
+        self.layout.addWidget(QLabel("Page: "), 0, 0, 1, 2)
+        self.pageEdit = QLineEdit("1")
+        self.layout.addWidget(self.pageEdit, 0, 2, 1, 1)
+        self.pageEdit.setMaximumSize(45,20)
+        self.widget.setLayout(self.layout)
+        self.setDefaultWidget(self.widget)
+
+    def page(self):
+        return self.pageEdit.text()

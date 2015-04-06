@@ -33,6 +33,8 @@ def star_difficulty(beatmap):
     for difficulty, mode in zip(difficulties, game_modes):
         if mode == 0 and max_difficulty < difficulty:
             max_difficulty = difficulty
+    if beatmap.id_ == '266145':
+        print(max_difficulty)
     return max_difficulty
 
 
@@ -88,10 +90,12 @@ def ok_favourited(beatmap):
 
 def favourited_times(beatmap):
     try:
-        number = FAVOURITED_TIMES_.search(beatmap.source).group(1)
+        number = re.compile(r'<div class=\'beatmap\' id=\'' + beatmap.id_ + '\' style=\'width:420px;\'>.*<i class=\'icon-heart\'></i> ([0-9]+)').search(beatmap.all_maps).group(1)
+        if beatmap.id_ == '266145':
+            print(number)
         return int(number)
     except (AttributeError, IndexError):
-        return 0
+        print("cloud not find favorited")
 
 
 def filter(beatmaps):
