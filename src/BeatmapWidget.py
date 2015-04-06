@@ -10,14 +10,10 @@ class BeatmapWidget(QWidget):
     def __init__(self, beatmap, item, parent=None):
         super(BeatmapWidget, self).__init__(parent)
 
-        logger.error_msg("__init__: Started BeatmapWidget.", None)
-
         self.container = parent
         self.item = item
         self.beatmap = beatmap
         self.add_widgets()
-
-        logger.error_msg("__init__: Finished BeatmapWidget.", None)
 
     def add_widgets(self):
         self.layout = QGridLayout()
@@ -37,12 +33,9 @@ class BeatmapWidget(QWidget):
         self.setLayout(self.layout)
 
     def image_clicked(self):
-        logger.error_msg("image_clicked: Start of function.", None)
         if CURRENTLY_PLAYING['p'] is not None:
-            logger.error_msg("image_clicked: Stopping last song.", None)
             CURRENTLY_PLAYING['p'].stop()
         if CURRENTLY_PLAYING['id'] is None:
-            logger.error_msg("image_clicked: Playing new song.", None)
             self.play_song()
         else:
             if CURRENTLY_PLAYING['id'] != self.beatmap.id_:

@@ -21,9 +21,7 @@ class Beatmap:
         self.song = None
 
     def get_name(self):
-        logger.error_msg("get_name: Getting name of beatmap " + self.id_ + ".", None)
         if self.name is None:
-            logger.error_msg("get_name: Name is None. Calculating name.", None)
             try:
                 self.artist = ARTIST_.search(self.json).group(1)
             except (AttributeError, IndexError) as err:
@@ -43,9 +41,7 @@ class Beatmap:
         return self.name
 
     def get_picture(self):
-        logger.error_msg("get_image: Getting picture of beatmap: " + self.id_ + '.', None)
         if self.picture is None:
-            logger.error_msg("get_image: Picture is None. Opening picture.", None)
             try:
                 self.picture = QImage()
                 self.picture.load("temp/" + self.id_ + '.jpg')
