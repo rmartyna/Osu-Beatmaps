@@ -113,6 +113,7 @@ class MyMainWindow(QMainWindow):
             page = int(self.page_action.page())
         except Exception as err:
             logger.error_msg("download_and_show: Enter valid value for page.", err)
+            return
         self.main_widget.clear()
         scraper.scrape_data(beatmaps, page)
         logger.error_msg("download_and_show: Finished scraping.", None)
