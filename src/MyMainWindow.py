@@ -12,6 +12,8 @@ import ExitDialog
 import images
 import scraper
 import evaluator
+import time
+import threading
 
 
 class MyMainWindow(QMainWindow):
@@ -35,6 +37,9 @@ class MyMainWindow(QMainWindow):
         self.main_widget = QListWidget()
         self.main_widget.setSelectionMode(QAbstractItemView.NoSelection)
         self.items = []
+        self.items_len = 0
+        self.beatmaps = []
+        self.beatmaps_to_add = []
         self.main_widget.setMinimumSize(800, 450)
         self.main_widget.setMaximumWidth(800)
         self.setCentralWidget(self.main_widget)
@@ -52,18 +57,13 @@ class MyMainWindow(QMainWindow):
         self.about_action = self.menuBar().addAction("About")
         self.connect(self.about_action, SIGNAL("triggered()"), self.pop_about_dialog)
 
-        self.download_menu = self.menuBar().addMenu("Download")
-
-        self.download_and_show_action = self.download_menu.addAction("Download and Show")
-        self.connect(self.download_and_show_action, SIGNAL("triggered()"), self.download_and_show)
-        self.page_action = PageAction(self)
-        self.download_menu.addAction(self.page_action)
-
+        self.download_action = self.menuBar().addAction("Download")
+        self.connect(self.download_action, SIGNAL("triggered()"), self.download_and_show_wrapper)
+        self.connect(self, SIGNAL("add_widgets()"), self.add_widgets)
+        self.connect(self, SIGNAL("copy_widget()"), self.copy_widget)
 
         self.exit_action = self.menuBar().addAction("Exit")
         self.connect(self.exit_action, SIGNAL("triggered()"), self.pop_exit_dialog)
-
-
 
     def pop_login_dialog(self):
         logger.error_msg("pop_login_dialog: Started LoginDialog.", None)
@@ -98,44 +98,67 @@ class MyMainWindow(QMainWindow):
         item = QListWidgetItem()
         item.setSizeHint(QSize(100, 100))
         widget = BeatmapWidget.BeatmapWidget(beatmap, item, self)
-        self.items.append((item, widget))
         self.main_widget.addItem(item)
         self.main_widget.setItemWidget(item, widget)
+        self.items_len += 1
 
     def delete_widget(self, widget):
         current_index = self.main_widget.indexFromItem(widget).row()
         self.main_widget.takeItem(current_index)
-        '''
-        while True:
-            current_item = self.main_widget.takeItem(current_index + 1)
-            if current_item is None:
-                break
-            self.main_widget.insertItem(current_index, current_item)
-            current_index += 1
-            break
-        '''
+        self.items_len -= 1
+
+    def download_and_show_wrapper(self):
+        thread = threading.Thread(target=MyMainWindow.download_and_show, args=(self,))
+        thread.setDaemon(True)
+        thread.start()
+        thread = threading.Thread(target=MyMainWindow.copy_widgets_deamon, args=(self,))
+        thread.setDaemon(True)
+        thread.start()
 
     def download_and_show(self):
         logger.error_msg("download_and_show: Start of function.", None)
         if not connector.check_if_logged():
             QMessageBox.information(self, "Not logged in", "You should login first")
             return
-        beatmaps = []
-        try:
-            page = int(self.page_action.page())
-        except Exception as err:
-            logger.error_msg("download_and_show: Enter valid value for page.", err)
-            return
-        self.main_widget.clear()
-        scraper.scrape_data(beatmaps, page)
-        logger.error_msg("download_and_show: Finished scraping.", None)
-        evaluator.filter(beatmaps)
-        logger.error_msg("download_and_show: Finished evaluating.", None)
-        scraper.scrape_data_after_filtering(beatmaps)
-        logger.error_msg("download_and_show: Finished scraping after filtering.", None)
-        for beatmap in beatmaps:
-            self.add_widget(beatmap)
-        logger.error_msg("download_and_show: Finished making widgets.", None)
+
+        for page in range(1, 126):
+            time.sleep(0.1)
+            while True:
+                if self.check_for_new_maps():
+                    break
+                else:
+                    time.sleep(2)
+            while self.beatmaps:
+                self.beatmaps.pop()
+            scraper.scrape_data(self.beatmaps, page)
+            logger.error_msg("download_and_show: Finished scraping.", None)
+            evaluator.filter(self.beatmaps)
+            logger.error_msg("download_and_show: Finished evaluating.", None)
+            scraper.scrape_data_after_filtering(self.beatmaps)
+            logger.error_msg("download_and_show: Finished scraping after filtering.", None)
+            self.emit(SIGNAL("add_widgets()"))
+            logger.error_msg("download_and_show: Finished making widgets.", None)
+
+    def add_widgets(self):
+        for beatmap in self.beatmaps:
+            self.beatmaps_to_add.append(beatmap)
+
+    def copy_widgets_deamon(self):
+        while True:
+            if self.check_for_add_widget() and len(self.beatmaps_to_add) > 0:
+                self.emit(SIGNAL("copy_widget()"))
+                time.sleep(0.01)
+            else:
+                time.sleep(0.1)
+
+    def copy_widget(self):
+        self.add_widget(self.beatmaps_to_add.pop(0))
+
+    def check_for_new_maps(self):
+        return len(self.beatmaps_to_add) < 10
+
+    def check_for_add_widget(self):
+        return self.items_len < 10
 
     def pop_exit_dialog(self):
         logger.error_msg("pop_exit_dialog: Started ExitDialog.", None)
