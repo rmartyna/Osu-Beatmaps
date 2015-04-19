@@ -1,8 +1,7 @@
-import pickle
-import logger
 import shutil
 import os
 from init import *
+import logger
 
 
 def load_settings():
@@ -22,34 +21,26 @@ def load_settings():
 
     try:
         SETTINGS['USERNAME'] = settings["USERNAME"]
-        logger.error_msg("load_settings: Loaded username.", None)
     except KeyError:
-        logger.error_msg("load_settings: Could not load username.", None)
         pass
     try:
         SETTINGS['PASSWORD'] = settings["PASSWORD"]
-        logger.error_msg("load_settings: Loaded password.", None)
     except KeyError:
-        logger.error_msg("load_settings: Could not load password.", None)
         pass
     try:
         SETTINGS['DOWNLOAD_FOLDER'] = settings["DOWNLOAD_FOLDER"]
-        logger.error_msg("load_settings: Loaded download folder.", None)
     except KeyError:
-        logger.error_msg("load_settings: Could not load download folder.", None)
         pass
 
 
 def save_settings():
+    logger.error_msg("save_settings: Started saving settings.", None)
     try:
         shutil.rmtree('temp')
     except WindowsError:
         logger.error_msg("save_settings: Could not find temp folder.", None)
 
     try:
-        print(SETTINGS['USERNAME'])
-        print(SETTINGS['PASSWORD'])
-        print(SETTINGS['DOWNLOAD_FOLDER'])
         pickle.dump(SETTINGS, open("config.dat", "wb"))
         logger.error_msg("save_settings: Saved settings.", None)
     except Exception as err:

@@ -25,5 +25,3 @@ class ExitDialog(QDialog):
 
         self.setWindowTitle("Logout")
         self.setWindowIcon(images.get_icon())
-
-        logger.error_msg("__init__: Finished ExitDialog.", None)

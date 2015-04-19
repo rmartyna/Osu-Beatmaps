@@ -3,6 +3,7 @@ from PyQt4.QtCore import *
 from init import *
 import logger
 import images
+import connector
 
 
 class LoginDialog(QDialog):
@@ -47,29 +48,24 @@ class LoginDialog(QDialog):
         self.setWindowTitle("Login")
         self.setWindowIcon(images.get_icon())
 
-        logger.error_msg("__init__: Finished LoginDialog.", None)
-
     def try_login(self):
         logger.error_msg("try_login: Checking if given username and password are ok.", None)
-        if self.parent().try_login(str(self.username.text()), str(self.password.text())):
+
+        self.parent().try_login(str(self.username.text()), str(self.password.text()))
+        if connector.check_if_logged():
             logger.error_msg("try_login: Successful login.", None)
             if self.username_check_box.isChecked():
-                logger.error_msg("try_login: Remember username is checked.", None)
                 SETTINGS['USERNAME'] = str(self.username.text())
             else:
-                logger.error_msg("try_login: Remember username is not checked.", None)
                 SETTINGS['USERNAME'] = None
             if self.password_check_box.isChecked():
-                logger.error_msg("try_login: Remember password is checked.", None)
                 SETTINGS['PASSWORD'] = str(self.password.text())
             else:
-                logger.error_msg("try_login: Remember password is not checked.", None)
                 SETTINGS['PASSWORD'] = None
             self.accept()
         else:
             logger.error_msg("try_login: Failed login.", None)
             self.login_failed()
-            self.password.clear()
 
     def username_check_box_changed(self, value):
         if value == 0:

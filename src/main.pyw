@@ -1,9 +1,9 @@
 import sys
+import os
 from PyQt4.QtGui import *
+from init import *
 import settings
 import MyMainWindow
-import init
-import os
 
 
 def main():
@@ -13,7 +13,7 @@ def main():
     window.show()
     app.exec_()
     settings.save_settings()
-    init.ERROR_LOG.close()
+    ERROR_LOG.close()
 
 
 if __name__ == "__main__":

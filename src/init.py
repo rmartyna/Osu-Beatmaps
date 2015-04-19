@@ -9,7 +9,7 @@ LOGIN_DATA = {
     'login': 'Login'
 }
 
-FAVOURITED_TIMES_ = re.compile(r'<div><b>Favourited ([0-9]+) times?</b> in total')
+FAVOURITED_TIMES_ = re.compile(r'<i class=\'icon-heart\'></i> ([0-9]+)')
 BEATMAP_ID_ = re.compile(r'a href=\'/s/([0-9]+)\'')
 STAR_DIFFICULTY_ = re.compile(r'\"difficultyrating\":\"([0-9\.]+)\"')
 GAME_MODE_ = re.compile(r'\"mode\":\"([0123])\"')
@@ -22,7 +22,7 @@ GRAVEYARDED_ = re.compile(r'Graveyarded Beatmaps \([0-9]+\)')
 PP_RANK_ = re.compile(r'\"pp_rank\":\"([0-9]+)\"')
 CREATOR_ = re.compile(r'\"creator\":\"([^\"]+)\"')
 INVALID_CHARACTERS_ = re.compile(r'[\\/\?:\*<>|"]')
-LOGIN_PAGE_ = re.compile(r'Welcome, <b><a href=\"/u/([0-9]+)\">')
+LOGIN_PAGE_USERNAME_ = re.compile(r'Welcome, <b><a href=\"/u/([0-9]+)\">')
 IMAGE_URL_ = re.compile(r'<img class=\'bmt\' src=\"([^\"]+)\">')
 
 FIRST_PAGE = 1
@@ -36,8 +36,8 @@ MIN_PP_RANK = 5000
 
 ERROR_LOG = open('../error_log.txt', 'w')
 
-VERSION = "0.1"
-DATE = "4th April 2015"
+VERSION = "0.21"
+DATE = "19th April 2015"
 EMAIL = "rmartyna94@gmail.com"
 GITHUB = r"https://github.com/rmartyna/Osu-Beatmaps/"
 

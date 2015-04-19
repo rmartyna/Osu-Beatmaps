@@ -1,5 +1,6 @@
-from PyQt4.QtGui import QIcon, QImage
+from PyQt4.QtGui import *
 import logger
+
 
 CALLED = False
 
@@ -13,7 +14,6 @@ def load():
 
 def get_icon():
     global CALLED
-    logger.error_msg("get_icon: Returning icon.", None)
     if not CALLED:
         CALLED = True
         load()

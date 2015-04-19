@@ -1,10 +1,9 @@
+import os
+from PyQt4.QtGui import *
+import pydub
 from init import *
-from PyQt4.QtGui import QImage
-from PyQt4.QtGui import QSound
 import logger
 import images
-import os
-from pydub import AudioSegment
 
 
 class Beatmap:
@@ -19,7 +18,7 @@ class Beatmap:
         self.artist = None
         self.title = None
         self.name = None
-        self.picture = None
+        self.image = None
         self.song = None
 
     def get_name(self):
@@ -27,44 +26,52 @@ class Beatmap:
             try:
                 self.artist = ARTIST_.search(self.json).group(1)
             except (AttributeError, IndexError) as err:
-                logger.error_msg('beatmap_name: Could not find artist of beatmap ' + self.id_ + '.', err)
+                logger.error_msg('get_name: Could not find artist of beatmap ' + self.id_ + '.', err)
                 self.artist = 'DEFAULT'
             try:
                 self.title = TITLE_.search(self.json).group(1)
             except (AttributeError, IndexError) as err:
-                logger.error_msg('beatmap_name: Could not find title of baetmap ' + self.id_ + '.', err)
+                logger.error_msg('get_name: Could not find title of baetmap ' + self.id_ + '.', err)
                 self.title = 'DEFAULT'
             try:
                 self.name = INVALID_CHARACTERS_.sub('', str(self.id_) + ' ' + self.artist + ' - ' + self.title)
             except Exception as err:
-                logger.error_msg('beatmap_name: Could not convert beatmap name to windows-like. Artist: '
+                logger.error_msg('get_name: Could not convert beatmap name to windows-like. Artist: '
                                  + self.artist + ' ,title: ' + self.title + '.', err)
                 self.name = 'DEFAULT - DEFAULT'
         return self.name
 
-    def get_picture(self):
-        if self.picture is None:
+    def get_image(self):
+        if self.image is None:
             try:
                 if not os.path.exists("temp/" + self.id_ + ".jpg"):
                     raise Exception("Could not find image.")
-                self.picture = QImage()
-                self.picture.load("temp/" + self.id_ + '.jpg')
-            except Exception as err:
-                logger.error_msg("get_image: Could not load beatmap picture.", err)
+                self.image = QImage()
+                self.image.load("temp/" + self.id_ + '.jpg')
+            except Exception:
+                logger.error_msg("get_image: Could not load image of beatmap " + self.id_ + ".", None)
                 try:
-                    self.picture = images.get_default_image()
+                    self.image = images.get_default_image()
                 except Exception as err:
-                    logger.error_msg("get_image: Could not load default beatmap picture.", err)
-        return self.picture
+                    logger.error_msg("get_image: Could not load default beatmap image.", err)
+        return self.image
 
     def get_song(self):
         if self.song is None:
             try:
-                AudioSegment.from_mp3("temp/" + self.id_ + '.mp3').export("temp/" + self.id_ + '.wav', format='wav')
+                pydub.AudioSegment.from_mp3("temp/" + self.id_ + '.mp3').export("temp/" + self.id_ +
+                                                                                '.wav', format='wav')
                 try:
                     self.song = QSound("temp/" + self.id_ + '.wav')
-                except Exception as err:
-                    logger.error_msg("get_song: Could not find wav song.", err)
+                except Exception:
+                    logger.error_msg("get_song: Could not find wav song of beatmap " + self.id_ + ".", None)
             except Exception as err:
                 logger.error_msg("get_song: Could not load mp3 and convert to wav.", err)
         return self.song
+
+    def add_to_database(self):
+        try:
+            DATABASE.add(self.id_)
+            pickle.dump(DATABASE, open("database.dat", "wb"))
+        except Exception as err:
+            logger.error_msg('add_to_database: Could not dump database.', err)

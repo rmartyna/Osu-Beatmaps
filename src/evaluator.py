@@ -29,7 +29,7 @@ def star_difficulty(beatmap):
         logger.error_msg('star_difficulty: Error finding game modes in json of beatmap '
                          + beatmap.id_ + '.', err)
         return -1
-    max_difficulty = 0
+    max_difficulty = -1
     for difficulty, mode in zip(difficulties, game_modes):
         if mode == 0 and max_difficulty < difficulty:
             max_difficulty = difficulty
@@ -50,8 +50,6 @@ def ok_pp_rank(beatmap):
         return False
 
 
-# TODO
-# FIRST FINISH SCRAPE_BEATMAPS_USER_PAGE
 def ok_kudosu(beatmap):
     return False
 
@@ -87,18 +85,22 @@ def ok_favourited(beatmap):
 
 
 def favourited_times(beatmap):
+    try:
+        number = FAVOURITED_TIMES_.findall(beatmap.all_maps)[beatmap.index]
+        return int(number)
+    except Exception as err:
+        logger.error_msg('favourited_times: Could not find favourited times regular expression in all_maps of beatmap '
+                         + beatmap.id_ + '.', err)
+        return 0
 
-    number = re.compile(r'<i class=\'icon-heart\'></i> ([0-9]+)').findall(beatmap.all_maps)[beatmap.index]
-    return int(number)
 
-
-
-def filter(beatmaps):
-    logger.error_msg("filter: Filtering maps.", None)
-    logger.error_msg("filter: Before filtering: " + str(len(beatmaps)) + " maps.", None)
+def filter_maps(beatmaps):
+    logger.error_msg("filter_maps: Filtering maps.", None)
+    logger.error_msg("filter_maps: Before filtering: " + str(len(beatmaps)) + " maps.", None)
     for i in range(len(beatmaps) - 1, -1, -1):
-        if beatmaps[i].id_ not in DATABASE and ok_difficulty(beatmaps[i]) and (ok_creator(beatmaps[i]) or ok_favourited(beatmaps[i])):
+        if beatmaps[i].id_ not in DATABASE and ok_difficulty(beatmaps[i]) and\
+                (ok_creator(beatmaps[i]) or ok_favourited(beatmaps[i])):
             continue
         else:
             beatmaps.pop(i)
-    logger.error_msg("filter: After filtering: " + str(len(beatmaps)) + " maps.", None)
+    logger.error_msg("filter_maps: After filtering: " + str(len(beatmaps)) + " maps.", None)

@@ -12,7 +12,3 @@ class OptionsDialog(QDialog):
 
         self.setWindowTitle("Options")
         self.setWindowIcon(images.get_icon())
-
-        logger.error_msg("__init__: Finished OptionsDialog.", None)
-
-

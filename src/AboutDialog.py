@@ -15,11 +15,10 @@ class AboutDialog(QDialog):
         <p>Last updated: {1}</p>
         <p>This application is used to help filter
         beatmaps,<br/>allowing you to download high quality
-        maps automatically.</p>
+        maps more easily.</p>
         <p>You can contact me at: {2}</p>
         <p>More information and source code at:<br/>
-         {3}</p>""".format(VERSION, DATE,
-                           EMAIL, GITHUB), self)
+        {3}</p>""".format(VERSION, DATE, EMAIL, GITHUB), self)
         self.button = QPushButton("OK")
         self.button.setMaximumWidth(100)
 
@@ -32,5 +31,3 @@ class AboutDialog(QDialog):
 
         self.setWindowTitle("About")
         self.setWindowIcon(images.get_icon())
-
-        logger.error_msg("__init__: Finished AboutDialog.", None)
