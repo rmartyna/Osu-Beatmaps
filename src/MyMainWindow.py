@@ -103,8 +103,17 @@ class MyMainWindow(QMainWindow):
         self.main_widget.setItemWidget(item, widget)
 
     def delete_widget(self, widget):
-        self.main_widget.removeItemWidget(widget)
-
+        current_index = self.main_widget.indexFromItem(widget).row()
+        self.main_widget.takeItem(current_index)
+        '''
+        while True:
+            current_item = self.main_widget.takeItem(current_index + 1)
+            if current_item is None:
+                break
+            self.main_widget.insertItem(current_index, current_item)
+            current_index += 1
+            break
+        '''
 
     def download_and_show(self):
         logger.error_msg("download_and_show: Start of function.", None)

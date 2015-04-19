@@ -33,7 +33,8 @@ class BeatmapWidget(QWidget):
 
         self.connect(self.imageLabel, SIGNAL("clicked()"), self.image_clicked)
         self.connect(self.download_button, SIGNAL("clicked()"), self.download_beatmap_wraper)
-        self.connect(self.remove_button, SIGNAL("clicked()"), self.remove_beatmap)
+        self.connect(self.remove_button, SIGNAL("clicked()"), self.remove_beatmap_wrapper)
+        self.connect(self, SIGNAL("remove()"), self.remove_beatmap)
 
         self.setLayout(self.layout)
 
@@ -67,18 +68,24 @@ class BeatmapWidget(QWidget):
         else:
             QMessageBox.information(self, "Could not download map.", "You should login first.")
 
+
     def download_beatmap(self):
         downloader.download_beatmap(self.beatmap)
-        self.container.delete_widget(self.item)
+        self.emit(SIGNAL("remove()"))
+
 
     def remove_beatmap(self):
+        self.container.delete_widget(self.item)
+
+
+    def remove_beatmap_wrapper(self):
         try:
             DATABASE.add(self.beatmap.id_)
             pickle.dump(DATABASE, open("database.dat", "wb"))
             logger.error_msg("remove_beatmap: Removed beatmap: " + self.beatmap.id_ + ".", None)
         except Exception as err:
             logger.error_msg('remove_beatmap: Could not dump database.', err)
-        self.container.delete_widget(self.item)
+        self.emit(SIGNAL("remove()"))
 
 
 class ImageLabel(QLabel):
