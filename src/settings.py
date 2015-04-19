@@ -41,7 +41,10 @@ def load_settings():
 
 
 def save_settings():
-    shutil.rmtree('temp')
+    try:
+        shutil.rmtree('temp')
+    except WindowsError:
+        logger.error_msg("save_settings: Could not find temp folder.", None)
 
     try:
         print(SETTINGS['USERNAME'])

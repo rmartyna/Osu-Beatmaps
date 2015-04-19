@@ -46,7 +46,7 @@ SETTINGS = {
     'PASSWORD': None,
     'DOWNLOAD_FOLDER': r'D:\beatmaps'}
 
-SESSION = requests.Session()
+SESSION = [requests.Session()]
 
 LOGIN_URL = 'https://osu.ppy.sh/forum/ucp.php?mode=login'
 MAIN_PAGE_URL = 'https://osu.ppy.sh'

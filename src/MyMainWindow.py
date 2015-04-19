@@ -108,6 +108,9 @@ class MyMainWindow(QMainWindow):
 
     def download_and_show(self):
         logger.error_msg("download_and_show: Start of function.", None)
+        if not connector.check_if_logged():
+            QMessageBox.information(self, "Not logged in", "You should login first")
+            return
         beatmaps = []
         try:
             page = int(self.page_action.page())

@@ -2,6 +2,8 @@ from init import *
 from PyQt4.QtGui import QImage
 from PyQt4.QtGui import QSound
 import logger
+import images
+import os
 from pydub import AudioSegment
 
 
@@ -43,13 +45,14 @@ class Beatmap:
     def get_picture(self):
         if self.picture is None:
             try:
+                if not os.path.exists("temp/" + self.id_ + ".jpg"):
+                    raise Exception("Could not find image.")
                 self.picture = QImage()
                 self.picture.load("temp/" + self.id_ + '.jpg')
             except Exception as err:
                 logger.error_msg("get_image: Could not load beatmap picture.", err)
                 try:
-                    self.picture = QImage()
-                    self.picture.load("resources/default.jpg")
+                    self.picture = images.get_default_image()
                 except Exception as err:
                     logger.error_msg("get_image: Could not load default beatmap picture.", err)
         return self.picture

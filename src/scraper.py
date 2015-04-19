@@ -35,7 +35,7 @@ def scrape_data_after_filtering(beatmaps):
 
 def scrape_beatmaps_id(beatmaps, page):
     try:
-        response = SESSION.get(ALL_MAPS_URL + str(page))
+        response = SESSION[0].get(ALL_MAPS_URL + str(page))
         try:
             result = BEATMAP_ID_.findall(response.content)
             for index, beatmap_id in enumerate(result):
@@ -52,7 +52,7 @@ def scrape_beatmaps_json(beatmaps):
 
 def scrape_json(beatmap, to_remove, index):
     try:
-        response = SESSION.get(MAP_JSON_URL + beatmap.id_)
+        response = SESSION[0].get(MAP_JSON_URL + beatmap.id_)
         beatmap.json = response.content
     except requests.RequestException as err:
         logger.error_msg('scrape_beatmaps_json: Error getting json on beatmap '
@@ -68,7 +68,7 @@ def scrape_creator(beatmap, to_remove, index):
     try:
         creator = CREATOR_.search(beatmap.json).group(1)
         try:
-            response = SESSION.get(MAP_CREATOR_URL + creator)
+            response = SESSION[0].get(MAP_CREATOR_URL + creator)
             beatmap.creator = response.content
         except requests.RequestException as err:
             logger.error_msg('scrape_beatmaps_creator: Could not get creator page of baetmap '
@@ -88,7 +88,7 @@ def scrape_profile(beatmap, to_remove, index):
     try:
         user_id = USER_ID_.search(beatmap.creator).group(1)
         try:
-            response = SESSION.get(MAP_PROFILE_URL_START + user_id + MAP_PROFILE_URL_END)
+            response = SESSION[0].get(MAP_PROFILE_URL_START + user_id + MAP_PROFILE_URL_END)
             beatmap.profile = response.content
         except requests.RequestException as err:
             logger.error_msg('scrape_beatmaps_profile: Could not get profile page of creator '
@@ -113,7 +113,7 @@ def scrape_beatmaps_images(beatmaps):
 
 def scrape_image(beatmap):
     try:
-        image = SESSION.get(MAP_IMAGE_URL_START + beatmap.id_ + MAP_IMAGE_URL_END)
+        image = SESSION[0].get(MAP_IMAGE_URL_START + beatmap.id_ + MAP_IMAGE_URL_END)
         if len(image.content) > 0:
             try:
                 f = open("temp/" + beatmap.id_ + '.jpg', 'wb')
@@ -141,7 +141,7 @@ def scrape_beatmaps_songs(beatmaps):
 
 def scrape_song(beatmap):
     try:
-        response = SESSION.get(MAP_SONG_URL_START + beatmap.id_ + MAP_SONG_URL_END)
+        response = SESSION[0].get(MAP_SONG_URL_START + beatmap.id_ + MAP_SONG_URL_END)
         try:
             f = open('temp/' + beatmap.id_ + '.mp3', 'wb')
             try:

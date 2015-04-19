@@ -3,6 +3,7 @@ from PyQt4.QtCore import *
 import logger
 import time
 import downloader
+import connector
 from init import *
 import threading
 
@@ -60,8 +61,11 @@ class BeatmapWidget(QWidget):
             logger.error_msg("play_song: Could not load song of beatmap " + self.beatmap.id_ + ".", None)
 
     def download_beatmap_wraper(self):
-        thread = threading.Thread(target=BeatmapWidget.download_beatmap, args=(self,))
-        thread.start()
+        if connector.check_if_logged():
+            thread = threading.Thread(target=BeatmapWidget.download_beatmap, args=(self,))
+            thread.start()
+        else:
+            QMessageBox.information(self, "Could not download map.", "You should login first.")
 
     def download_beatmap(self):
         downloader.download_beatmap(self.beatmap)

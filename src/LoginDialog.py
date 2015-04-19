@@ -18,6 +18,7 @@ class LoginDialog(QDialog):
             self.username = QLineEdit(SETTINGS['USERNAME'])
         password_label = QLabel("Password: ")
         self.password = QLineEdit()
+        self.password.setEchoMode(QLineEdit.Password)
         self.username_check_box = QCheckBox("Remember username ")
         self.password_check_box = QCheckBox("Remember password ")
         if SETTINGS['USERNAME'] is not None:
@@ -67,6 +68,7 @@ class LoginDialog(QDialog):
             self.accept()
         else:
             logger.error_msg("try_login: Failed login.", None)
+            self.login_failed()
             self.password.clear()
 
     def username_check_box_changed(self, value):
@@ -80,3 +82,7 @@ class LoginDialog(QDialog):
             self.username_check_box.setEnabled(True)
         if value == 2:
             self.username_check_box.setEnabled(False)
+
+    def login_failed(self):
+        self.password.clear()
+        QMessageBox.information(self, "Login failed", "Invalid username or password.")

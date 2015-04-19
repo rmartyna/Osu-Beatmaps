@@ -45,7 +45,7 @@ def download_beatmap(beatmap):
     try:
         beatmap_file = open(absolute_path, 'wb')
         try:
-            beatmap_data = SESSION.get('https://osu.ppy.sh/d/' + beatmap.id_)
+            beatmap_data = SESSION[0].get('https://osu.ppy.sh/d/' + beatmap.id_)
             try:
                 beatmap_file.write(beatmap_data.content)
                 logger.error_msg("download_beatmap: Finished downloading beatmap: " + beatmap.id_ + ".", None)
