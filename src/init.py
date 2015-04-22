@@ -30,8 +30,8 @@ LAST_PAGE = 125
 
 ERROR_LOG = open('../error_log.txt', 'w')
 
-VERSION = "0.21"
-DATE = "19th April 2015"
+VERSION = "0.30"
+DATE = "22th April 2015"
 EMAIL = "rmartyna94@gmail.com"
 GITHUB = r"https://github.com/rmartyna/Osu-Beatmaps/"
 
