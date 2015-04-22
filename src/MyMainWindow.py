@@ -66,7 +66,11 @@ class MyMainWindow(QMainWindow):
     def pop_options_dialog(self):
         options_dialog = OptionsDialog.OptionsDialog(self)
         if options_dialog.exec_():
-            pass
+            SETTINGS['MIN_FAVOURITED'] = int(options_dialog.min_favourited_lineedit.text())
+            SETTINGS['MIN_DIFFICULTY'] = float(options_dialog.min_difficulty_lineedit.text())
+            SETTINGS['MIN_RANKED'] = int(options_dialog.min_ranked_lineedit.text())
+            SETTINGS['MIN_NON_RANKED'] = int(options_dialog.min_non_ranked_lineedit.text())
+            SETTINGS['MIN_PP_RANK'] = int(options_dialog.min_pp_rank_lineedit.text())
 
     def pop_about_dialog(self):
         AboutDialog.AboutDialog(self).exec_()
@@ -85,6 +89,9 @@ class MyMainWindow(QMainWindow):
         self.items_len -= 1
 
     def download_and_show_wrapper(self):
+        if not connector.check_if_logged():
+            QMessageBox.information(self, "Not logged in", "You should login first.")
+            return
         thread = threading.Thread(target=MyMainWindow.downloader_daemon, args=(self,))
         thread.setDaemon(True)
         thread.start()
@@ -94,9 +101,7 @@ class MyMainWindow(QMainWindow):
 
     def downloader_daemon(self):
         logger.error_msg("downloader_daemon: Start of function.", None)
-        if not connector.check_if_logged():
-            QMessageBox.information(self, "Not logged in", "You should login first.")
-            return
+
 
         for page in range(1, 126):
             time.sleep(0.1)
