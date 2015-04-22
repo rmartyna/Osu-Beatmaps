@@ -31,6 +31,26 @@ def load_settings():
         SETTINGS['DOWNLOAD_FOLDER'] = settings["DOWNLOAD_FOLDER"]
     except KeyError:
         pass
+    try:
+        SETTINGS['MIN_FAVOURITED'] = settings['MIN_FAVOURITED']
+    except KeyError:
+        pass
+    try:
+        SETTINGS['MIN_DIFFICULTY'] = settings['MIN_DIFFICULTY']
+    except KeyError:
+        pass
+    try:
+        SETTINGS['MIN_RANKED'] = settings['MIN_RANKED']
+    except KeyError:
+        pass
+    try:
+        SETTINGS['MIN_NON_RANKED'] = settings['MIN_NON_RANKED']
+    except KeyError:
+        pass
+    try:
+        SETTINGS['MIN_PP_RANK'] = settings['MIN_PP_RANK']
+    except KeyError:
+        pass
 
 
 def save_settings():

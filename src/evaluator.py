@@ -3,7 +3,7 @@ import logger
 
 
 def ok_difficulty(beatmap):
-    return star_difficulty(beatmap) >= MIN_DIFFICULTY
+    return star_difficulty(beatmap) >= SETTINGS['MIN_DIFFICULTY']
 
 
 def star_difficulty(beatmap):
@@ -43,7 +43,7 @@ def ok_creator(beatmap):
 def ok_pp_rank(beatmap):
     try:
         pp_rank = PP_RANK_.search(beatmap.creator).group(1)
-        return int(pp_rank) <= MIN_PP_RANK
+        return int(pp_rank) <= SETTINGS['MIN_PP_RANK']
     except Exception as err:
         logger.error_msg('ok_pp_rank: Could not find pp_rank regular expression in creator of beatmap '
                          + beatmap.id_ + '.', err)
@@ -64,7 +64,7 @@ def ok_ranked(beatmap):
     except (AttributeError, IndexError):
         ranked = 0
 
-    return int(ranked) >= MIN_RANKED
+    return int(ranked) >= SETTINGS['MIN_RANKED']
 
 
 def ok_non_ranked(beatmap):
@@ -77,11 +77,11 @@ def ok_non_ranked(beatmap):
     except (AttributeError, IndexError):
         graveyarded = 0
 
-    return int(pending) + int(graveyarded) >= MIN_NON_RANKED
+    return int(pending) + int(graveyarded) >= SETTINGS['MIN_NON_RANKED']
 
 
 def ok_favourited(beatmap):
-    return favourited_times(beatmap) >= MIN_FAVOURITED
+    return favourited_times(beatmap) >= SETTINGS['MIN_FAVOURITED']
 
 
 def favourited_times(beatmap):

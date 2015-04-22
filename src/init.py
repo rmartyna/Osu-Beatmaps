@@ -28,12 +28,6 @@ IMAGE_URL_ = re.compile(r'<img class=\'bmt\' src=\"([^\"]+)\">')
 FIRST_PAGE = 1
 LAST_PAGE = 125
 
-MIN_FAVOURITED = 5
-MIN_DIFFICULTY = 4.0
-MIN_RANKED = 1
-MIN_NON_RANKED = 5
-MIN_PP_RANK = 5000
-
 ERROR_LOG = open('../error_log.txt', 'w')
 
 VERSION = "0.21"
@@ -44,7 +38,12 @@ GITHUB = r"https://github.com/rmartyna/Osu-Beatmaps/"
 SETTINGS = {
     'USERNAME': None,
     'PASSWORD': None,
-    'DOWNLOAD_FOLDER': r'D:\beatmaps'}
+    'DOWNLOAD_FOLDER': r'D:\beatmaps',
+    'MIN_FAVOURITED': 5,
+    'MIN_DIFFICULTY': 4.0,
+    'MIN_RANKED': 1,
+    'MIN_NON_RANKED': 5,
+    'MIN_PP_RANK': 5000}
 
 SESSION = [requests.Session()]
 
