@@ -4,10 +4,10 @@ This application is used to help filter beatmaps, allowing you to download high 
 
 # Dependences
 
-Python 2.7
-Requests library
-PyQt4
-FFmpeg
+* Python 2.7
+* Requests library
+* PyQt4
+* FFmpeg
 
 # Screenshots
 
