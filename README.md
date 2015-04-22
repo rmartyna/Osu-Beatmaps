@@ -16,5 +16,6 @@ Note that it should be used on pending maps, since ranked maps are generally hig
 
 * Python 2.7
 * Requests library
+* Pydub library
 * PyQt4
 * FFmpeg
