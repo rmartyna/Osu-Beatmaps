@@ -11,6 +11,7 @@ Then you can choose whether to download or remove beatmaps from future searches.
 Note that it should be used on pending maps, since ranked maps are generally high quality.
 
 ### Screenshots
+![alt tag](http://url/to/img.png)
 
 ### Dependences
 
